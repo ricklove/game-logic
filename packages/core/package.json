@@ -1,0 +1,17 @@
+{
+  "name": "@local/core",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.2",
+    "ts-node": "^10.9.1"
+  }
+}

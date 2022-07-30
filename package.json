@@ -1,0 +1,30 @@
+{
+  "name": "game-logic",
+  "private": true,
+  "version": "1.0.0",
+  "description": "All the things! - All abstract game logic by Rick Love.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ricklove/game-logic.git"
+  },
+  "homepage": "https://github.com/ricklove/game-logic#readme",
+  "author": "Rick Love",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ricklove/game-logic/issues"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "typescript": "^4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.2",
+    "ts-node": "^10.9.1"
+  }
+}
