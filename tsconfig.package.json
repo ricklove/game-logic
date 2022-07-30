@@ -3,7 +3,7 @@
         "composite": true,
         "incremental": true,
         "target": "ESNext",
-        "module": "commonjs",
+        "module": "ESNext",
         "declaration": true,
         "declarationMap": true,
         "sourceMap": true,

@@ -6,7 +6,6 @@
             "DOM.Iterable",
             "ESNext"
         ],
-        "module": "ESNext",
         "isolatedModules": true,
         "outDir": "./lib",
     },
