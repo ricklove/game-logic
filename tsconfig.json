@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.package.json",
+    "references": [
+        {
+            "path": "./packages/core"
+        },
+        {
+            "path": "./packages/core-ui"
+        },
+        {
+            "path": "./packages/tiles"
+        },
+        {
+            "path": "./packages/tiles-ui"
+        },
+    ]
+}

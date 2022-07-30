@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "preact": "^10.9.0"
+    "preact": "^10.9.0",
+    "@local/tiles-ui": "*"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.3.0",

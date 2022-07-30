@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.package.json",
+    "compilerOptions": {
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
+        "module": "ESNext",
+        "isolatedModules": true,
+        "outDir": "./lib",
+    },
+    "include": [
+        "src",
+        "index.ts",
+    ],
+}

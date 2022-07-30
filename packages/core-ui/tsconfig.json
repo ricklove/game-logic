@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig.package-ui.json",
+    "compilerOptions": {
+        "outDir": "./lib",
+    },
+    "include": [
+        "src",
+        "index.ts",
+    ],
+}

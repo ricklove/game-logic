@@ -1,5 +1,5 @@
 {
-  "name": "@local/core",
+  "name": "@local/core-ui",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,7 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "@local/core": "*"
   },
   "devDependencies": {
     "@types/node": "^18.6.2",

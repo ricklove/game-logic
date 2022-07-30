@@ -1,15 +1,21 @@
 {
     "compilerOptions": {
+        "composite": true,
         "incremental": true,
-        "target": "es2019",
+        "target": "ESNext",
         "module": "commonjs",
         "declaration": true,
+        "declarationMap": true,
         "sourceMap": true,
         "strict": true,
         "moduleResolution": "node",
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "./lib"
+        "resolveJsonModule": true,
+        "jsx": "preserve",
+        "outDir": "./lib",
     }
 }
