@@ -1,5 +1,12 @@
 {
     "extends": "./tsconfig.package.json",
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "exclude": [
+        "lib",
+        "projects"
+    ],
     "references": [
         {
             "path": "./packages/core"

@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { TileGridViewer } from '@local/tiles-ui';
+import { Int32 } from '@local/core';
 
 export function App() {
   return (
@@ -11,7 +12,9 @@ export function App() {
         <div>Test 4</div>
 
         <div>
-          <TileGridViewer/>
+          <TileGridViewer tileGrid={{
+            tiles: [{position: {x:0 as Int32,y:0 as Int32}}]
+          }}/>
         </div>
       </div>
     </>
