@@ -3,7 +3,7 @@ import { extractLevelParts, LevelPart } from "./level-parts";
 import { createTileGrid } from "./tile-grid";
 import { Tile } from "./types";
 
-export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, randomizer?: Randomizer }) => {
+export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, randomizer?: Randomizer, maxSteps?: number }) => {
     // Use wave form collapse
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
@@ -12,34 +12,10 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
 
     const levelParts = extractLevelParts(levelPartsSource, { partSize }).map(x => ({
         ...x,
-        symbolsTop___: '',
-        symbolsBottom: '',
-        symbolsLeft__: '',
-        symbolsRight_: '',
-        allowedTop___: [] as number[],
-        allowedBottom: [] as number[],
-        allowedLeft__: [] as number[],
-        allowedRight_: [] as number[],
     }));
 
     type WaveFormLevelPart = typeof levelParts[number];
 
-    levelParts.forEach(part => {
-        const t = partSize.y - 1;
-        const r = partSize.x - 1;
-
-        part.symbolsTop___ = part.tiles.filter((row, ry) => ry === t).flatMap(row => row.map(col => col.symbol)).join('');
-        part.symbolsBottom = part.tiles.filter((row, ry) => ry === 0).flatMap(row => row.map(col => col.symbol)).join('');
-        part.symbolsLeft__ = part.tiles.flatMap(row => row.filter((col, cx) => cx === 0)).map(col => col.symbol).join('');
-        part.symbolsRight_ = part.tiles.flatMap(row => row.filter((col, cx) => cx === r)).map(col => col.symbol).join('');
-    });
-
-    levelParts.forEach(part => {
-        part.allowedTop___ = levelParts.map((p, i) => ({ p, i })).filter(p => part.symbolsTop___ === p.p.symbolsTop___).map(p2 => p2.i);
-        part.allowedBottom = levelParts.map((p, i) => ({ p, i })).filter(p => part.symbolsBottom === p.p.symbolsBottom).map(p2 => p2.i);
-        part.allowedLeft__ = levelParts.map((p, i) => ({ p, i })).filter(p => part.symbolsLeft__ === p.p.symbolsLeft__).map(p2 => p2.i);
-        part.allowedRight_ = levelParts.map((p, i) => ({ p, i })).filter(p => part.symbolsRight_ === p.p.symbolsRight_).map(p2 => p2.i);
-    });
 
 
     type WaveFormCollapseTile = Tile & {
@@ -47,23 +23,32 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         part: undefined | WaveFormLevelPart;
     };
 
-    const levelGen = createTileGrid<WaveFormCollapseTile>(ValueTypes.Vector2({
+    const levelGenSize = ValueTypes.Vector2({
         x: Math.ceil((levelSize.x - 1) / (partSize.x - 1)),
         y: Math.ceil((levelSize.y - 1) / (partSize.y - 1)),
-    }), pos => ({
+    })
+    const levelGen = createTileGrid<WaveFormCollapseTile>(levelGenSize, pos => ({
         symbol: ValueTypes.Char('.'),
         position: pos,
         possiblePartIndexes: [...new Array(levelParts.length)].map((_, iPart) => ValueTypes.Int32(iPart)),
         part: undefined,
     }));
 
-    const collapseSurroundingTiles_recursive = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: number[], visited: WaveFormCollapseTile[]) => {
+    let iterations = 0;
+    const collapseSurroundingTiles_recursive = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: number[], visited: WaveFormCollapseTile[], from?: undefined | WaveFormCollapseTile) => {
+        iterations++;
+        if (options?.maxSteps && iterations >= options.maxSteps) { return; }
+
         if (!tile || tile.part) { return; }
-        if (visited.includes(tile)) { return; }
+        // if (visited.includes(tile)) { return; }
         visited.push(tile);
 
         const oldPossiblePartIndexes = tile.possiblePartIndexes;
         tile.possiblePartIndexes = tile.possiblePartIndexes.filter(i => allowedPartIndexes.includes(i));
+
+        // TODO: 233 is correct, how did it change to 232?
+        console.log('collapseSurroundingTiles_recursive', { iterations, ...tile?.position, fromPos: from?.position, tile, oldPossiblePartIndexes, possiblePartIndexes: tile.possiblePartIndexes, allowedPartIndexes, visited, from });
+
         if (oldPossiblePartIndexes.length === tile.possiblePartIndexes.length) {
             // No change
             return;
@@ -85,20 +70,34 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
 
         const { position } = tile;
 
-        const t = levelGen.tiles[position.y + 1]?.[position.x + 0];
         const b = levelGen.tiles[position.y - 1]?.[position.x + 0];
-        const r = levelGen.tiles[position.y + 0]?.[position.x + 1];
+        const t = levelGen.tiles[position.y + 1]?.[position.x + 0];
         const l = levelGen.tiles[position.y + 0]?.[position.x - 1];
+        const r = levelGen.tiles[position.y + 0]?.[position.x + 1];
 
-        collapseSurroundingTiles_recursive(t, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedBottom), visited);
-        collapseSurroundingTiles_recursive(b, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedTop___), visited);
-        collapseSurroundingTiles_recursive(r, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedLeft__), visited);
-        collapseSurroundingTiles_recursive(l, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedRight_), visited);
+        collapseSurroundingTiles_recursive(b, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedBottom), visited, tile);
+        collapseSurroundingTiles_recursive(t, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedTop___), visited, tile);
+        collapseSurroundingTiles_recursive(l, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedLeft__), visited, tile);
+        collapseSurroundingTiles_recursive(r, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedRight_), visited, tile);
     };
 
-    // TODO: Set the corner/border tiles to enforce edges
 
     let remainingTiles = levelGen.tiles.flatMap(x => x);
+
+    // Set the corner/border tiles to enforce edges
+    const blCorners = levelParts.filter(x => x.isEdgeBottom && x.isEdgeLeft__).map(x => x.index);
+    const tlCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeLeft__).map(x => x.index);
+    const brCorners = levelParts.filter(x => x.isEdgeBottom && x.isEdgeRight_).map(x => x.index);
+    const trCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeRight_).map(x => x.index);
+    // if (blCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[0][0], blCorners, []); }
+    // if (tlCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[levelGenSize.y - 1][0], tlCorners, []); }
+    // if (brCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[0][levelGenSize.x - 1], brCorners, []); }
+    if (trCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[levelGenSize.y - 1][levelGenSize.x - 1], trCorners, []); }
+
+    // TEMP Skip next
+    remainingTiles = [];
+
+
     while (remainingTiles.length) {
         const minLength = Math.min(...remainingTiles.map(x => x.possiblePartIndexes.length));
         const lowEntropyTiles = remainingTiles.filter(x => x.possiblePartIndexes.length === minLength);

@@ -24,7 +24,7 @@ export const TileGridViewer = <T extends Tile>({
                                     {!CustomComponent && (
                                         <div
                                             className={`flex flex-row items-center justify-center 
-                                            w-8 h-8
+                                            w-4 h-4
                                             border-solid border-white border
                                             bg-black text-red-600
                                             text-sm
