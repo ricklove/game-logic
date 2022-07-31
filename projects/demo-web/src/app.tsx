@@ -6,19 +6,20 @@ import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_cas
 
 export function App() {
 
-  const [levelParts, setLevelParts] = useState(undefined as undefined | LevelPart[]);
+  const [levelParts, setLevelParts] = useState(undefined as undefined | ReturnType<typeof buildLevel>['levelParts']);
   const [level, setLevel] = useState(undefined as undefined | TileGrid);
   const [levelGen, setLevelGen] = useState(undefined as undefined | ReturnType<typeof buildLevel>['levelGen']);
 
   const load = () => {
-    const levelParts = extractLevelParts(levelPartsSource_castle);
-    setLevelParts(levelParts);
+    // const levelParts = extractLevelParts(levelPartsSource_castle);
+    // setLevelParts(levelParts);
 
-    const { level, levelGen } = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 10, y: 10 }), {
+    const { level, levelGen, levelParts } = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 10, y: 10 }), {
       randomizer: createRandomizer('42'),
     });
     setLevel(level);
     setLevelGen(levelGen);
+    setLevelParts(levelParts);
   };
 
   return (
@@ -40,7 +41,18 @@ export function App() {
       <div className='flex flex-row bg-black p-8'>
         <div>
           {levelGen && (
-            <TileGridViewer tileGrid={levelGen} />
+            <TileGridViewer tileGrid={levelGen} CustomComponent={({ tile }) => (
+              <div
+                className='flex flex-row flex-wrap overflow-hidden w-32 h-32 text-white'
+              >
+                {tile.part && (
+                  <TileGridViewer tileGrid={tile.part} />
+                )}
+                {!tile.part && (
+                  <div>{tile.possiblePartIndexes.map(x => x).join(' ')}</div>
+                )}
+              </div>
+            )} />
           )}
         </div>
       </div>

@@ -25,13 +25,13 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
     type WaveFormLevelPart = typeof levelParts[number];
 
     levelParts.forEach(part => {
-        const b = partSize.y - 1;
+        const t = partSize.y - 1;
         const r = partSize.x - 1;
 
-        part.symbolsTop___ = part.tiles.filter((row, ry) => ry === 0).flatMap(row => row.map(t => t.symbol)).join('');
-        part.symbolsBottom = part.tiles.filter((row, ry) => ry === b).flatMap(row => row.map(t => t.symbol)).join('');
-        part.symbolsLeft__ = part.tiles.flatMap(row => row.filter((col, cx) => cx === 0)).map(t => t.symbol).join('');
-        part.symbolsRight_ = part.tiles.flatMap(row => row.filter((col, cx) => cx === r)).map(t => t.symbol).join('');
+        part.symbolsTop___ = part.tiles.filter((row, ry) => ry === t).flatMap(row => row.map(col => col.symbol)).join('');
+        part.symbolsBottom = part.tiles.filter((row, ry) => ry === 0).flatMap(row => row.map(col => col.symbol)).join('');
+        part.symbolsLeft__ = part.tiles.flatMap(row => row.filter((col, cx) => cx === 0)).map(col => col.symbol).join('');
+        part.symbolsRight_ = part.tiles.flatMap(row => row.filter((col, cx) => cx === r)).map(col => col.symbol).join('');
     });
 
     levelParts.forEach(part => {
@@ -137,7 +137,7 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
             }
         });
 
-        return { level, levelGen };
+        return { level, levelGen, levelParts };
     }
 
 
@@ -163,6 +163,6 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         }
     });
 
-    return { level, levelGen: undefined };
+    return { level, levelGen: undefined, levelParts: undefined };
 };
 
