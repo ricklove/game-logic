@@ -4,3 +4,4 @@ export * from './src/build-level';
 export * from './src/level-parts';
 export * from './src/level-parts-sources/castle';
 export * from './src/level-parts-sources/castle-rooms';
+export * from './src/level-parts-sources/castle-routes';

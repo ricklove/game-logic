@@ -229,7 +229,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
 
         const minLength = Math.min(...remainingTiles.map(x => x.possiblePartIndexes.length));
         const lowEntropyTiles = remainingTiles.filter(x => x.possiblePartIndexes.length === minLength);
-        // Pick the left bottom tile (to avoid the middle)
+        // Pick the most bottom->left tile (of lowest entropy - to avoid middle)
         const nextTile = lowEntropyTiles[0];
         //const nextTile = randomizer.randomItem(lowEntropyTiles);
         const partIndex = randomizer.randomItem(nextTile.possiblePartIndexes);

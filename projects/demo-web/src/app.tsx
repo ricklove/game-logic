@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
 import { createRandomizer, Int32, ValueTypes, delay } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
-import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult, levelPartsSource_castleRooms } from '@local/tiles';
+import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult, levelPartsSource_castleRooms, levelPartsSource_castleRoutes } from '@local/tiles';
 import { JSX } from 'preact';
 
 
@@ -28,11 +28,21 @@ const Controls = ({
 
   const [seed, setSeed] = useState('42');
   const [maxSteps, setMaxSteps] = useState(1000);
-  const [levelSize, setLevelSize] = useState({ x: 64, y: 32 });
-  const [partSize, setPartSize] = useState(5);
+  const [levelSize, setLevelSize] = useState({ x: 40, y: 20 });
+  const [partSize, setPartSize] = useState(3);
   const [overlap, setOverlap] = useState(2);
-  const maxStepsRef = useRef(maxSteps);
-  maxStepsRef.current = maxSteps;
+
+  const getSettings = () => {
+    return ({
+      seed,
+      maxSteps,
+      levelSize,
+      partSize,
+      overlap,
+    });
+  };
+  const settingsRef = useRef(getSettings());
+  settingsRef.current = getSettings();
 
   const { loading, error, doWork } = useAsyncWorker();
 
@@ -41,9 +51,17 @@ const Controls = ({
     // const levelParts = extractLevelParts(levelPartsSource_castle);
     // setLevelParts(levelParts);
 
-      const results = await buildLevel(levelPartsSource_castleRooms, ValueTypes.Vector2(levelSize), {
+      const {
+        seed,
+        maxSteps,
+        levelSize,
+        partSize,
+        overlap,
+      } = settingsRef.current;
+
+      const results = await buildLevel(levelPartsSource_castleRoutes, ValueTypes.Vector2(levelSize), {
         randomizer: createRandomizer(seed),
-        maxSteps: maxStepsRef.current,
+        maxSteps,
         partSize: ValueTypes.Vector2({ x: partSize, y: partSize }),
         overlap,
         onProgress: (r) => {
@@ -59,11 +77,18 @@ const Controls = ({
     const handler = (e: KeyboardEvent) => {
       console.log('keydown', { key: e.key });
       if (e.key === 'd') {
-        setMaxSteps(s => maxStepsRef.current = s + 1);
+        settingsRef.current.maxSteps++;
+        setMaxSteps(settingsRef.current.maxSteps);
         load();
       }
       if (e.key === 'a') {
-        setMaxSteps(s => maxStepsRef.current = s - 1);
+        settingsRef.current.maxSteps--;
+        setMaxSteps(settingsRef.current.maxSteps);
+        load();
+      }
+      if (e.key === 'r') {
+        settingsRef.current.seed = `${Math.random()}`;
+        setSeed(settingsRef.current.seed);
         load();
       }
     };
