@@ -27,7 +27,7 @@ const Controls = ({
 
   const [seed, setSeed] = useState('42');
   const [maxSteps, setMaxSteps] = useState(1000);
-  const [partSize, setPartSize] = useState(3);
+  const [partSize, setPartSize] = useState(4);
   const [overlap, setOverlap] = useState(2);
   const maxStepsRef = useRef(maxSteps);
   maxStepsRef.current = maxSteps;
