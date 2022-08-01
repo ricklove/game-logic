@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
 import { createRandomizer, Int32, ValueTypes, delay } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
-import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult } from '@local/tiles';
+import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult, levelPartsSource_castleRooms } from '@local/tiles';
 import { JSX } from 'preact';
 
 
@@ -29,7 +29,7 @@ const Controls = ({
   const [seed, setSeed] = useState('42');
   const [maxSteps, setMaxSteps] = useState(1000);
   const [levelSize, setLevelSize] = useState({ x: 64, y: 32 });
-  const [partSize, setPartSize] = useState(4);
+  const [partSize, setPartSize] = useState(5);
   const [overlap, setOverlap] = useState(2);
   const maxStepsRef = useRef(maxSteps);
   maxStepsRef.current = maxSteps;
@@ -41,7 +41,7 @@ const Controls = ({
     // const levelParts = extractLevelParts(levelPartsSource_castle);
     // setLevelParts(levelParts);
 
-      const results = await buildLevel(levelPartsSource_castle, ValueTypes.Vector2(levelSize), {
+      const results = await buildLevel(levelPartsSource_castleRooms, ValueTypes.Vector2(levelSize), {
         randomizer: createRandomizer(seed),
         maxSteps: maxStepsRef.current,
         partSize: ValueTypes.Vector2({ x: partSize, y: partSize }),
@@ -237,3 +237,4 @@ const Expandable = ({
     </>
   );
 };
+
