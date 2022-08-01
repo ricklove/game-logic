@@ -1,7 +1,6 @@
-import { Char, Int32, ValueTypes, Vector2 } from "@local/core/lib/src/types";
+import { Char, Int32, ValueTypes, Vector2, BitField } from "@local/core";
 import { Tile, TileGrid } from "./types";
 
-export type AllowedSet = Int32[];
 export type LevelPart = TileGrid & {
     index: Int32;
     key: string,
@@ -13,10 +12,10 @@ export type LevelPart = TileGrid & {
     symbolsTop___: string,
     symbolsLeft__: string,
     symbolsRight_: string,
-    allowedBottom: AllowedSet,
-    allowedTop___: AllowedSet,
-    allowedLeft__: AllowedSet,
-    allowedRight_: AllowedSet,
+    allowedBottom: BitField,
+    allowedTop___: BitField,
+    allowedLeft__: BitField,
+    allowedRight_: BitField,
 };
 
 export const extractLevelParts = (levelPartsSource: string, options?: { partSize?: Vector2, overlap?: number, mirror?: boolean }): LevelPart[] => {
@@ -61,10 +60,10 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
                 symbolsTop___: '',
                 symbolsLeft__: '',
                 symbolsRight_: '',
-                allowedBottom: [],
-                allowedTop___: [],
-                allowedLeft__: [],
-                allowedRight_: [],
+                allowedBottom: BitField.empty,
+                allowedTop___: BitField.empty,
+                allowedLeft__: BitField.empty,
+                allowedRight_: BitField.empty,
             };
 
             if (part.key.length < partSize.x * partSize.y) {
@@ -89,11 +88,13 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
         part.symbolsRight_ = part.tiles.map(row => row.filter((col, cx) => cx > r - (overlap)).map(col => col.symbol).join('')).reverse().join('\n');
     });
 
+    const size = ValueTypes.Int32(levelParts.length);
+
     levelParts.forEach(part => {
-        part.allowedBottom = part.isEdgeBottom ? [] : levelParts.filter(p => part.symbolsBottom === p.symbolsTop___).map(p => ValueTypes.Int32(p.index));
-        part.allowedTop___ = part.isEdgeTop___ ? [] : levelParts.filter(p => part.symbolsTop___ === p.symbolsBottom).map(p => ValueTypes.Int32(p.index));
-        part.allowedLeft__ = part.isEdgeLeft__ ? [] : levelParts.filter(p => part.symbolsLeft__ === p.symbolsRight_).map(p => ValueTypes.Int32(p.index));
-        part.allowedRight_ = part.isEdgeRight_ ? [] : levelParts.filter(p => part.symbolsRight_ === p.symbolsLeft__).map(p => ValueTypes.Int32(p.index));
+        part.allowedBottom = BitField.create(size, part.isEdgeBottom ? [] : levelParts.filter(p => part.symbolsBottom === p.symbolsTop___).map(p => ValueTypes.Int32(p.index)));
+        part.allowedTop___ = BitField.create(size, part.isEdgeTop___ ? [] : levelParts.filter(p => part.symbolsTop___ === p.symbolsBottom).map(p => ValueTypes.Int32(p.index)));
+        part.allowedLeft__ = BitField.create(size, part.isEdgeLeft__ ? [] : levelParts.filter(p => part.symbolsLeft__ === p.symbolsRight_).map(p => ValueTypes.Int32(p.index)));
+        part.allowedRight_ = BitField.create(size, part.isEdgeRight_ ? [] : levelParts.filter(p => part.symbolsRight_ === p.symbolsLeft__).map(p => ValueTypes.Int32(p.index)));
     });
 
     return levelParts;

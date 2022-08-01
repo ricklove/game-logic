@@ -1,10 +1,10 @@
-import { createRandomizer, delay, Int32, Randomizer, ValueTypes, Vector2 } from "@local/core";
-import { send } from "process";
-import { AllowedSet, extractLevelParts, LevelPart } from "./level-parts";
+import { BitField, createRandomizer, delay, Int32, Randomizer, ValueTypes, Vector2 } from "@local/core";
+import { extractLevelParts, LevelPart } from "./level-parts";
 import { createTileGrid } from "./tile-grid";
 import { Tile, TileGrid } from "./types";
 
 type WaveFormCollapseTile = Tile & {
+    possiblePartBitField: BitField,
     possiblePartIndexes: Int32[],
     part: undefined | LevelPart;
 };
@@ -30,10 +30,12 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
         x: Math.ceil((levelSize.x - overlap) / (partSize.x - overlap)),
         y: Math.ceil((levelSize.y - overlap) / (partSize.y - overlap)),
     })
+    const allPartIndexes = [...new Array(levelParts.length)].map((_, iPart) => ValueTypes.Int32(iPart));
     const levelGen = createTileGrid<WaveFormCollapseTile>(levelGenSize, pos => ({
         symbol: ValueTypes.Char('.'),
         position: pos,
-        possiblePartIndexes: [...new Array(levelParts.length)].map((_, iPart) => ValueTypes.Int32(iPart)),
+        possiblePartBitField: BitField.create(ValueTypes.Int32(allPartIndexes.length), allPartIndexes),
+        possiblePartIndexes: [...allPartIndexes],
         part: undefined,
     }));
 
@@ -129,48 +131,66 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
     //     const set = new Set(b);
     //     return a.filter(x => set.has(x));
     // };
-    const intersection = (a: Int32[], b: AllowedSet) => {
-        const sets = new Set(b.flatMap(x => x));
-        return a.filter(x => sets.has(x));
-        // return a.filter(x => b.some(s => s.has(x)));
+    // const intersection = (a: Int32[], b: AllowedSet) => {
+    //     const sets = new Set(b.flatMap(x => x));
+    //     return a.filter(x => sets.has(x));
+    //     // return a.filter(x => b.some(s => s.has(x)));
+    // };
+    // const union = (b: AllowedSet[]): AllowedSet => {
+    //     return b.flatMap(x => x);
+    // };
+    const intersection = (a: BitField, b: BitField) => {
+        return BitField.intersection(a, b);
     };
-    const union = (b: AllowedSet[]): AllowedSet => {
-        return b.flatMap(x => x);
+    const union = (sets: BitField[]): BitField => {
+        if (sets.length === 1) {
+            return sets[0];
+        }
+        if (sets.length === 2) {
+            return BitField.union(sets[0], sets[1]);
+        }
+        let u = sets[0];
+        for (const s of sets) {
+            if (u === s) { continue; }
+            u = BitField.union(u, s);
+        }
+        return u;
     };
 
-    const collapseTile = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: AllowedSet) => {
+    const collapseTile = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: BitField) => {
         iterations_collapseTile++;
 
         if (!tile || tile.part) { return; }
 
-        const oldPossiblePartIndexes = tile.possiblePartIndexes;
-        tile.possiblePartIndexes = intersection(tile.possiblePartIndexes, allowedPartIndexes);
+        const oldPossiblePartBitField = tile.possiblePartBitField;
+        tile.possiblePartBitField = intersection(tile.possiblePartBitField, allowedPartIndexes);
 
         // TODO: 233 is correct, how did it change to 232?
         // console.log('collapseTile', { iterations, ...tile?.position, tile, oldPossiblePartIndexes, possiblePartIndexes: tile.possiblePartIndexes, allowedPartIndexes });
 
-        if (oldPossiblePartIndexes.length === tile.possiblePartIndexes.length) {
+        if (BitField.equals(oldPossiblePartBitField, tile.possiblePartBitField)) {
             // No change
             return;
         }
 
-        if (tile.possiblePartIndexes.length === 1) {
-            const iPart = tile.possiblePartIndexes[0];
-            tile.part = levelParts[iPart];
+        if (BitField.hasOneTrueBit(tile.possiblePartBitField)) {
+            const iPart = BitField.indexOfFirstTrueBit(tile.possiblePartBitField);
+            tile.part = levelParts[iPart!];
 
             console.log('collapseTile: part set', { iPart, tile });
         }
 
-        if (tile.possiblePartIndexes.length === 0) {
+        if (BitField.isZero(tile.possiblePartBitField)) {
             console.error('No possible part available', {
                 tile,
-                oldPossiblePartIndexes,
+                oldPossiblePartBitField,
                 allowedPartIndexes,
             });
             // tile.part = levelParts[allowedPartIndexes[0]];
             return;
         }
 
+        tile.possiblePartIndexes = BitField.indexOfTrueBits(tile.possiblePartBitField);
         changedTiles.push(tile);
     };
 
@@ -206,10 +226,10 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
     let remainingTiles = levelGen.tiles.flatMap(x => x);
 
     // Set the corner/border tiles to enforce edges
-    const blCorners = levelParts.filter(x => x.isEdgeBottom && x.isEdgeLeft__).map(x => x.index);
-    const tlCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeLeft__).map(x => x.index);
-    const brCorners = levelParts.filter(x => x.isEdgeBottom && x.isEdgeRight_).map(x => x.index);
-    const trCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeRight_).map(x => x.index);
+    const blCorners = BitField.create(ValueTypes.Int32(levelParts.length), levelParts.filter(x => x.isEdgeBottom && x.isEdgeLeft__).map(x => x.index));
+    const tlCorners = BitField.create(ValueTypes.Int32(levelParts.length), levelParts.filter(x => x.isEdgeTop___ && x.isEdgeLeft__).map(x => x.index));
+    const brCorners = BitField.create(ValueTypes.Int32(levelParts.length), levelParts.filter(x => x.isEdgeBottom && x.isEdgeRight_).map(x => x.index));
+    const trCorners = BitField.create(ValueTypes.Int32(levelParts.length), levelParts.filter(x => x.isEdgeTop___ && x.isEdgeRight_).map(x => x.index));
     if (blCorners) { collapseTile(levelGen.tiles[0][0], blCorners); }
     if (tlCorners) { collapseTile(levelGen.tiles[levelGenSize.y - 1][0], tlCorners); }
     if (brCorners) { collapseTile(levelGen.tiles[0][levelGenSize.x - 1], brCorners); }
@@ -234,7 +254,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
         //const nextTile = randomizer.randomItem(lowEntropyTiles);
         const partIndex = randomizer.randomItem(nextTile.possiblePartIndexes);
 
-        collapseTile(nextTile, [partIndex]);
+        collapseTile(nextTile, BitField.create(ValueTypes.Int32(levelParts.length), [partIndex]));
         await processChangedTiles();
 
         if (remainingTiles.some(x => !x.possiblePartIndexes.length)) {
