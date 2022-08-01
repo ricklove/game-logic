@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
 import { createRandomizer, Int32, ValueTypes, delay } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
-import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel } from '@local/tiles';
+import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult } from '@local/tiles';
+import { JSX } from 'preact';
 
 
 export function App() {
 
-  const [results, setResults] = useState(undefined as undefined | ReturnType<typeof buildLevel>);
+  const [results, setResults] = useState(undefined as undefined | BuildLevelResult);
 
   return (
     <>
@@ -22,11 +23,12 @@ export function App() {
 const Controls = ({
   onResults,
 }: {
-  onResults: (value: ReturnType<typeof buildLevel>) => void,
+    onResults: (value: BuildLevelResult) => void,
 }) => {
 
   const [seed, setSeed] = useState('42');
   const [maxSteps, setMaxSteps] = useState(1000);
+  const [levelSize, setLevelSize] = useState({ x: 64, y: 32 });
   const [partSize, setPartSize] = useState(4);
   const [overlap, setOverlap] = useState(2);
   const maxStepsRef = useRef(maxSteps);
@@ -39,15 +41,16 @@ const Controls = ({
     // const levelParts = extractLevelParts(levelPartsSource_castle);
     // setLevelParts(levelParts);
 
-      await delay(0);
-      const results = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 64, y: 32 }), {
+      const results = await buildLevel(levelPartsSource_castle, ValueTypes.Vector2(levelSize), {
         randomizer: createRandomizer(seed),
         maxSteps: maxStepsRef.current,
         partSize: ValueTypes.Vector2({ x: partSize, y: partSize }),
         overlap,
+        onProgress: (r) => {
+          onResults(r);
+        },
       });
       stopIfObsolete();
-
       onResults(results);
     });
   };
@@ -95,6 +98,23 @@ const Controls = ({
       </div>
       <div className='flex flex-row'>
         <div className='p-2'>
+          Level Size:
+        </div>
+        <div className='p-2'>
+          x:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='number' value={`${levelSize.x}`} min="10" max="1000" onChange={(e) => setLevelSize(s => ({ ...s, x: Number.parseInt(e.currentTarget.value) }))} />
+        </div>
+        <div className='p-2'>
+          y:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='number' value={`${levelSize.y}`} min="10" max="1000" onChange={(e) => setLevelSize(s => ({ ...s, y: Number.parseInt(e.currentTarget.value) }))} />
+        </div>
+      </div>
+      <div className='flex flex-row'>
+        <div className='p-2'>
           Part Size:
         </div>
         <div className='p-2 text-black'>
@@ -121,56 +141,99 @@ const Controls = ({
 const LevelInfo = ({
   value,
 }: {
-  value: ReturnType<typeof buildLevel>,
+    value: BuildLevelResult,
 }) => {
 
   const {
     level,
+    levelAsParts,
     levelGen,
     levelParts,
   } = value;
 
   return (
     <>
-      Level
-      <div className='flex flex-row bg-black p-8'>
-        <div>
-          {level && (
-            <TileGridViewer tileGrid={level} />
-          )}
+      <Expandable title='Level' expanded>
+        <div className='flex flex-row bg-black p-8'>
+          <div>
+            {level && (
+              <TileGridViewer tileGrid={level} />
+            )}
+          </div>
         </div>
-      </div>
-      Level Gen
-      <div className='flex flex-row bg-black p-8'>
-        <div>
-          {levelGen && (
-            <TileGridViewer tileGrid={levelGen} CustomComponent={({ tile }) => (
-              <div
-                className='flex flex-row flex-wrap w-[300px] h-[300px] justify-start items-start text-white'
-              >
-                {tile.part && (
-                  <div className=''>
-                    <LevelPartsViewer levelParts={[tile.part]} allLevelParts={levelParts} />
-                    {/* <TileGridViewer tileGrid={tile.part} /> */}
+      </Expandable>
+      <Expandable title='Level as Parts'>
+        <div className='flex flex-row bg-black p-8'>
+          <div>
+            {levelAsParts && (
+              <TileGridViewer tileGrid={levelAsParts} />
+            )}
+          </div>
+        </div>
+      </Expandable>
+      <Expandable title='Debug'>
+        <>
+          <div>
+            Level Gen
+          </div>
+          <div className='flex flex-row bg-black p-8'>
+            <div>
+              {levelGen && (
+                <TileGridViewer tileGrid={levelGen} CustomComponent={({ tile }) => (
+                  <div
+                    className='flex flex-row flex-wrap w-[300px] h-[300px] justify-start items-start text-white'
+                  >
+                    {tile.part && (
+                      <div className=''>
+                        <LevelPartsViewer levelParts={[tile.part]} allLevelParts={levelParts} />
+                        {/* <TileGridViewer tileGrid={tile.part} /> */}
+                      </div>
+                    )}
+                    {!tile.part && (
+                      <div className='flex flex-row flex-wrap text-sm'>{tile.possiblePartIndexes.map(x => <LevelPartReference index={x} allLevelParts={levelParts} />)}</div>
+                    )}
                   </div>
-                )}
-                {!tile.part && (
-                  <div className='flex flex-row flex-wrap text-sm'>{tile.possiblePartIndexes.map(x => <LevelPartReference index={x} allLevelParts={levelParts} />)}</div>
-                )}
-              </div>
-            )} />
-          )}
-        </div>
-      </div>
-      Level Parts
-      <div className='flex flex-row bg-black p-8'>
-        <div>
-          {levelParts && (
-            <LevelPartsViewer levelParts={levelParts} allLevelParts={levelParts} />
-          )}
-          {/* <TileGridViewer tileGrid={createTileGrid({ x: 16 as Int32, y: 16 as Int32 })} /> */}
-        </div>
-      </div>
+                )} />
+              )}
+            </div>
+          </div>
+          <div>
+            Level Parts
+          </div>
+          <div className='flex flex-row bg-black p-8'>
+            <div>
+              {levelParts && (
+                <LevelPartsViewer levelParts={levelParts} allLevelParts={levelParts} />
+              )}
+              {/* <TileGridViewer tileGrid={createTileGrid({ x: 16 as Int32, y: 16 as Int32 })} /> */}
+            </div>
+          </div>
+        </>
+      </Expandable>
+    </>
+  );
+};
+
+
+const Expandable = ({
+  title,
+  expanded,
+  children,
+}: {
+  title: string,
+  expanded?: boolean,
+  children: JSX.Element
+}) => {
+  const [expand, setExpand] = useState(expanded ?? false);
+
+  return (
+    <>
+      <div onClick={() => setExpand(s => !s)}>{title}</div>
+      {expand && (
+        <>
+          {children}
+        </>
+      )}
     </>
   );
 };

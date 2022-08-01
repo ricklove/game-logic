@@ -1,9 +1,9 @@
 import { Char, Int32, ValueTypes, Vector2 } from "@local/core/lib/src/types";
 import { Tile, TileGrid } from "./types";
 
-
+export type AllowedSet = Int32[];
 export type LevelPart = TileGrid & {
-    index: number;
+    index: Int32;
     key: string,
     isEdgeBottom: boolean;
     isEdgeTop___: boolean;
@@ -13,10 +13,10 @@ export type LevelPart = TileGrid & {
     symbolsTop___: string,
     symbolsLeft__: string,
     symbolsRight_: string,
-    allowedBottom: number[],
-    allowedTop___: number[],
-    allowedLeft__: number[],
-    allowedRight_: number[],
+    allowedBottom: AllowedSet,
+    allowedTop___: AllowedSet,
+    allowedLeft__: AllowedSet,
+    allowedRight_: AllowedSet,
 };
 
 export const extractLevelParts = (levelPartsSource: string, options?: { partSize?: Vector2, overlap?: number, mirror?: boolean }): LevelPart[] => {
@@ -49,7 +49,7 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
                 })
             });
             const part: LevelPart = {
-                index: 0,
+                index: ValueTypes.Int32(0),
                 key: tiles.map(rows => rows.map(r => r.symbol).join('')).join('\n'),
                 size: partSize,
                 tiles,
@@ -81,9 +81,7 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
         const t = partSize.y - 1;
         const r = partSize.x - 1;
 
-        part.index = i;
-
-
+        part.index = ValueTypes.Int32(i);
 
         part.symbolsBottom = part.tiles.filter((row, ry) => ry < 0 + (overlap)).map(row => row.map(col => col.symbol).join('')).reverse().join('\n');
         part.symbolsTop___ = part.tiles.filter((row, ry) => ry > t - (overlap)).map(row => row.map(col => col.symbol).join('')).reverse().join('\n');
@@ -92,10 +90,10 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
     });
 
     levelParts.forEach(part => {
-        part.allowedBottom = part.isEdgeBottom ? [] : levelParts.filter(p => part.symbolsBottom === p.symbolsTop___).map(p => p.index);
-        part.allowedTop___ = part.isEdgeTop___ ? [] : levelParts.filter(p => part.symbolsTop___ === p.symbolsBottom).map(p => p.index);
-        part.allowedLeft__ = part.isEdgeLeft__ ? [] : levelParts.filter(p => part.symbolsLeft__ === p.symbolsRight_).map(p => p.index);
-        part.allowedRight_ = part.isEdgeRight_ ? [] : levelParts.filter(p => part.symbolsRight_ === p.symbolsLeft__).map(p => p.index);
+        part.allowedBottom = part.isEdgeBottom ? [] : levelParts.filter(p => part.symbolsBottom === p.symbolsTop___).map(p => ValueTypes.Int32(p.index));
+        part.allowedTop___ = part.isEdgeTop___ ? [] : levelParts.filter(p => part.symbolsTop___ === p.symbolsBottom).map(p => ValueTypes.Int32(p.index));
+        part.allowedLeft__ = part.isEdgeLeft__ ? [] : levelParts.filter(p => part.symbolsLeft__ === p.symbolsRight_).map(p => ValueTypes.Int32(p.index));
+        part.allowedRight_ = part.isEdgeRight_ ? [] : levelParts.filter(p => part.symbolsRight_ === p.symbolsLeft__).map(p => ValueTypes.Int32(p.index));
     });
 
     return levelParts;
