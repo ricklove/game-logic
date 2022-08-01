@@ -35,19 +35,17 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
     }));
 
     let iterations = 0;
-    const collapseSurroundingTiles_recursive = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: number[], visited: WaveFormCollapseTile[], from?: undefined | WaveFormCollapseTile) => {
-        iterations++;
-        if (options?.maxSteps && iterations >= options.maxSteps) { return; }
+    const changedTiles = [] as WaveFormCollapseTile[];
+
+    const collapseTile = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: number[]) => {
 
         if (!tile || tile.part) { return; }
-        // if (visited.includes(tile)) { return; }
-        visited.push(tile);
 
         const oldPossiblePartIndexes = tile.possiblePartIndexes;
         tile.possiblePartIndexes = tile.possiblePartIndexes.filter(i => allowedPartIndexes.includes(i));
 
         // TODO: 233 is correct, how did it change to 232?
-        console.log('collapseSurroundingTiles_recursive', { iterations, ...tile?.position, fromPos: from?.position, tile, oldPossiblePartIndexes, possiblePartIndexes: tile.possiblePartIndexes, allowedPartIndexes, visited, from });
+        console.log('collapseTile', { iterations, ...tile?.position, tile, oldPossiblePartIndexes, possiblePartIndexes: tile.possiblePartIndexes, allowedPartIndexes });
 
         if (oldPossiblePartIndexes.length === tile.possiblePartIndexes.length) {
             // No change
@@ -55,7 +53,10 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         }
 
         if (tile.possiblePartIndexes.length === 1) {
-            tile.part = levelParts[allowedPartIndexes[0]];
+            const iPart = tile.possiblePartIndexes[0];
+            tile.part = levelParts[iPart];
+
+            console.log('collapseTile: part set', { iPart, tile });
         }
 
         if (tile.possiblePartIndexes.length === 0) {
@@ -68,6 +69,12 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
             return;
         }
 
+        changedTiles.push(tile);
+    };
+
+    const expandFromChangedTile = (tile: WaveFormCollapseTile) => {
+        console.log('expandFromChangedTile', { iterations, ...tile?.position, tile });
+
         const { position } = tile;
 
         const b = levelGen.tiles[position.y - 1]?.[position.x + 0];
@@ -75,10 +82,17 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         const l = levelGen.tiles[position.y + 0]?.[position.x - 1];
         const r = levelGen.tiles[position.y + 0]?.[position.x + 1];
 
-        collapseSurroundingTiles_recursive(b, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedBottom), visited, tile);
-        collapseSurroundingTiles_recursive(t, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedTop___), visited, tile);
-        collapseSurroundingTiles_recursive(l, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedLeft__), visited, tile);
-        collapseSurroundingTiles_recursive(r, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedRight_), visited, tile);
+        collapseTile(b, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedBottom));
+        collapseTile(t, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedTop___));
+        collapseTile(l, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedLeft__));
+        collapseTile(r, tile.possiblePartIndexes.flatMap(iPart => levelParts[iPart].allowedRight_));
+    };
+
+    const processChangedTiles = () => {
+        for (const t of changedTiles) {
+            expandFromChangedTile(t);
+        }
+        changedTiles.splice(0, changedTiles.length);
     };
 
 
@@ -89,22 +103,27 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
     const tlCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeLeft__).map(x => x.index);
     const brCorners = levelParts.filter(x => x.isEdgeBottom && x.isEdgeRight_).map(x => x.index);
     const trCorners = levelParts.filter(x => x.isEdgeTop___ && x.isEdgeRight_).map(x => x.index);
-    // if (blCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[0][0], blCorners, []); }
-    // if (tlCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[levelGenSize.y - 1][0], tlCorners, []); }
-    // if (brCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[0][levelGenSize.x - 1], brCorners, []); }
-    if (trCorners) { collapseSurroundingTiles_recursive(levelGen.tiles[levelGenSize.y - 1][levelGenSize.x - 1], trCorners, []); }
+    if (blCorners) { collapseTile(levelGen.tiles[0][0], blCorners); }
+    if (tlCorners) { collapseTile(levelGen.tiles[levelGenSize.y - 1][0], tlCorners); }
+    if (brCorners) { collapseTile(levelGen.tiles[0][levelGenSize.x - 1], brCorners); }
+    if (trCorners) { collapseTile(levelGen.tiles[levelGenSize.y - 1][levelGenSize.x - 1], trCorners); }
+
+    processChangedTiles();
 
     // TEMP Skip next
-    remainingTiles = [];
-
+    // remainingTiles = [];
 
     while (remainingTiles.length) {
+        iterations++;
+        if (options?.maxSteps && iterations >= options.maxSteps) { break; }
+
         const minLength = Math.min(...remainingTiles.map(x => x.possiblePartIndexes.length));
         const lowEntropyTiles = remainingTiles.filter(x => x.possiblePartIndexes.length === minLength);
         const nextTile = randomizer.randomItem(lowEntropyTiles);
         const partIndex = randomizer.randomItem(nextTile.possiblePartIndexes);
 
-        collapseSurroundingTiles_recursive(nextTile, [partIndex], []);
+        collapseTile(nextTile, [partIndex]);
+        processChangedTiles();
 
         if (remainingTiles.some(x => !x.possiblePartIndexes.length)) {
             // Contradiction!
@@ -114,7 +133,7 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         remainingTiles = remainingTiles.filter(x => !x.part);
     }
 
-    const debug = true;
+    const debug = false;
     if (debug) {
         // Overlap the parts to create the level
         const actualLevelSize = ValueTypes.Vector2({
@@ -162,6 +181,6 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         }
     });
 
-    return { level, levelGen: undefined, levelParts: undefined };
+    return { level, levelGen, levelParts };
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
 import { createRandomizer, Int32, ValueTypes, delay } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
@@ -26,6 +26,9 @@ const Controls = ({
 }) => {
 
   const [maxSteps, setMaxSteps] = useState(60);
+  const maxStepsRef = useRef(maxSteps);
+  maxStepsRef.current = maxSteps;
+
   const { loading, error, doWork } = useAsyncWorker();
 
   const load = () => {
@@ -36,13 +39,31 @@ const Controls = ({
       await delay(0);
       const results = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 10, y: 10 }), {
         randomizer: createRandomizer('42'),
-        maxSteps,
+        maxSteps: maxStepsRef.current,
       });
       stopIfObsolete();
 
       onResults(results);
     });
   };
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      console.log('keydown', { key: e.key });
+      if (e.key === 'd') {
+        setMaxSteps(s => maxStepsRef.current = s + 1);
+        load();
+      }
+      if (e.key === 'a') {
+        setMaxSteps(s => maxStepsRef.current = s - 1);
+        load();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => {
+      window.removeEventListener('keydown', handler);
+    }
+  }, []);
 
   return (
     <div className='flex flex-col items-start p-4'>
