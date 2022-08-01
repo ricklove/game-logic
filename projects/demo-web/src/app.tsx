@@ -25,7 +25,10 @@ const Controls = ({
   onResults: (value: ReturnType<typeof buildLevel>) => void,
 }) => {
 
-  const [maxSteps, setMaxSteps] = useState(60);
+  const [seed, setSeed] = useState('42');
+  const [maxSteps, setMaxSteps] = useState(1000);
+  const [partSize, setPartSize] = useState(3);
+  const [overlap, setOverlap] = useState(2);
   const maxStepsRef = useRef(maxSteps);
   maxStepsRef.current = maxSteps;
 
@@ -37,9 +40,11 @@ const Controls = ({
     // setLevelParts(levelParts);
 
       await delay(0);
-      const results = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 10, y: 10 }), {
-        randomizer: createRandomizer('42'),
+      const results = buildLevel(levelPartsSource_castle, ValueTypes.Vector2({ x: 64, y: 32 }), {
+        randomizer: createRandomizer(seed),
         maxSteps: maxStepsRef.current,
+        partSize: ValueTypes.Vector2({ x: partSize, y: partSize }),
+        overlap,
       });
       stopIfObsolete();
 
@@ -72,14 +77,36 @@ const Controls = ({
           {`🧨`}
         </div>
       )}
-      <div>
-        <div className='flex flex-row'>
-          <div className='p-2'>
-            Max Steps:
-          </div>
-          <div className='p-2 text-black'>
-            <input type='number' value={`${maxSteps}`} min="1" max="1000000" onChange={(e) => setMaxSteps(Number.parseInt(e.currentTarget.value))} />
-          </div>
+      <div className='flex flex-row'>
+        <div className='p-2'>
+          Seed:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='text' value={`${seed}`} onChange={(e) => setSeed(e.currentTarget.value)} />
+        </div>
+      </div>
+      <div className='flex flex-row'>
+        <div className='p-2'>
+          Max Steps:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='number' value={`${maxSteps}`} min="1" max="1000000" onChange={(e) => setMaxSteps(Number.parseInt(e.currentTarget.value))} />
+        </div>
+      </div>
+      <div className='flex flex-row'>
+        <div className='p-2'>
+          Part Size:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='number' value={`${partSize}`} min="2" max="10" onChange={(e) => setPartSize(Number.parseInt(e.currentTarget.value))} />
+        </div>
+      </div>
+      <div className='flex flex-row'>
+        <div className='p-2'>
+          Overlap:
+        </div>
+        <div className='p-2 text-black'>
+          <input type='number' value={`${overlap}`} min="1" max={partSize - 1} onChange={(e) => setOverlap(Number.parseInt(e.currentTarget.value))} />
         </div>
       </div>
       <div className='p-2 bg-slate-900'>

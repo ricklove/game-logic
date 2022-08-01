@@ -187,6 +187,7 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
         }
     });
 
-    return { level, levelGen, levelParts };
+    return { level };
+    // return { level, levelGen, levelParts };
 };
 
