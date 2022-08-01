@@ -40,17 +40,17 @@ const LevelPartView = ({
             <div className="flex flex-row justify-center items-center">
                 {levelPart.isEdgeLeft__ && (<div>⬅</div>)}
                 <div className="flex flex-row flex-wrap bg-slate-800 p-1 h-16 w-16 text-xs">{levelPart.allowedLeft__.slice(0, 8).map(i => <LevelPartReference index={i} allLevelParts={allLevelParts} zIndex={zIndex + 1} />)}</div>
-                <div>{levelPart.symbolsLeft__}</div>
+                <div className='whitespace-pre-line'>{levelPart.symbolsLeft__}</div>
                 <div className="flex flex-col justify-center items-center">
                     {levelPart.isEdgeTop___ && (<div>⬆</div>)}
                     <div className="flex flex-row flex-wrap bg-slate-800 p-1 h-16 w-16 text-xs">{levelPart.allowedTop___.slice(0, 8).map(i => <LevelPartReference index={i} allLevelParts={allLevelParts} zIndex={zIndex + 1} />)}</div>
-                    <div>{levelPart.symbolsTop___}</div>
+                    <div className='whitespace-pre-line'>{levelPart.symbolsTop___}</div>
                     <TileGridViewer tileGrid={levelPart} />
-                    <div>{levelPart.symbolsBottom}</div>
+                    <div className='whitespace-pre-line'>{levelPart.symbolsBottom}</div>
                     <div className="flex flex-row flex-wrap bg-slate-800 p-1 h-16 w-16 text-xs">{levelPart.allowedBottom.slice(0, 8).map(i => <LevelPartReference index={i} allLevelParts={allLevelParts} zIndex={zIndex + 1} />)}</div>
                     {levelPart.isEdgeBottom && (<div>⬇</div>)}
                 </div>
-                <div>{levelPart.symbolsRight_}</div>
+                <div className='whitespace-pre-line'>{levelPart.symbolsRight_}</div>
                 <div className="flex flex-row flex-wrap bg-slate-800 p-1 h-16 w-16 text-xs">{levelPart.allowedRight_.slice(0, 8).map(i => <LevelPartReference index={i} allLevelParts={allLevelParts} zIndex={zIndex + 1} />)}</div>
                 {levelPart.isEdgeRight_ && (<div>➡</div>)}
             </div>

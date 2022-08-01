@@ -19,9 +19,10 @@ export type LevelPart = TileGrid & {
     allowedRight_: number[],
 };
 
-export const extractLevelParts = (levelPartsSource: string, options?: { partSize: Vector2 }): LevelPart[] => {
+export const extractLevelParts = (levelPartsSource: string, options?: { partSize?: Vector2, overlap?: number }): LevelPart[] => {
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
+        overlap = 1,
     } = options ?? {};
 
     const lines = levelPartsSource.split('\n')
@@ -81,10 +82,12 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
 
         part.index = i;
 
-        part.symbolsBottom = part.tiles.filter((row, ry) => ry === 0).flatMap(row => row.map(col => col.symbol)).join('');
-        part.symbolsTop___ = part.tiles.filter((row, ry) => ry === t).flatMap(row => row.map(col => col.symbol)).join('');
-        part.symbolsLeft__ = part.tiles.flatMap(row => row.filter((col, cx) => cx === 0)).map(col => col.symbol).join('');
-        part.symbolsRight_ = part.tiles.flatMap(row => row.filter((col, cx) => cx === r)).map(col => col.symbol).join('');
+
+
+        part.symbolsBottom = part.tiles.filter((row, ry) => ry < 0 + (overlap)).map(row => row.map(col => col.symbol).join('')).reverse().join('\n');
+        part.symbolsTop___ = part.tiles.filter((row, ry) => ry > t - (overlap)).map(row => row.map(col => col.symbol).join('')).reverse().join('\n');
+        part.symbolsLeft__ = part.tiles.map(row => row.filter((col, cx) => cx < 0 + (overlap)).map(col => col.symbol).join('')).reverse().join('\n');
+        part.symbolsRight_ = part.tiles.map(row => row.filter((col, cx) => cx > r - (overlap)).map(col => col.symbol).join('')).reverse().join('\n');
     });
 
     levelParts.forEach(part => {

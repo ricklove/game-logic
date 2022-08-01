@@ -3,14 +3,15 @@ import { extractLevelParts, LevelPart } from "./level-parts";
 import { createTileGrid } from "./tile-grid";
 import { Tile } from "./types";
 
-export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, randomizer?: Randomizer, maxSteps?: number }) => {
+export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, overlap?: number, randomizer?: Randomizer, maxSteps?: number }) => {
     // Use wave form collapse
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
+        overlap = 2,
         randomizer = createRandomizer(`${Math.random()}`),
     } = options ?? {};
 
-    const levelParts = extractLevelParts(levelPartsSource, { partSize }).map(x => ({
+    const levelParts = extractLevelParts(levelPartsSource, { partSize, overlap }).map(x => ({
         ...x,
     }));
 
@@ -24,8 +25,8 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
     };
 
     const levelGenSize = ValueTypes.Vector2({
-        x: Math.ceil((levelSize.x - 1) / (partSize.x - 1)),
-        y: Math.ceil((levelSize.y - 1) / (partSize.y - 1)),
+        x: Math.ceil((levelSize.x - overlap) / (partSize.x - overlap)),
+        y: Math.ceil((levelSize.y - overlap) / (partSize.y - overlap)),
     })
     const levelGen = createTileGrid<WaveFormCollapseTile>(levelGenSize, pos => ({
         symbol: ValueTypes.Char('.'),
@@ -161,17 +162,22 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
 
     // Overlap the parts to create the level
     const actualLevelSize = ValueTypes.Vector2({
-        x: levelGen.size.x * (partSize.x - 1) + 1,
-        y: levelGen.size.y * (partSize.y - 1) + 1,
+        x: levelGen.size.x * (partSize.x - overlap) + overlap,
+        y: levelGen.size.y * (partSize.y - overlap) + overlap,
     });
 
     const level = createTileGrid<Tile>(actualLevelSize, pos => {
-        const tyRaw = Math.floor(pos.y / (partSize.y - 1));
-        const ty = tyRaw >= levelGen.size.y ? tyRaw - 1 : tyRaw;
-        const py = tyRaw >= levelGen.size.y ? 2 : pos.y % (partSize.y - 1);
-        const txRaw = Math.floor(pos.x / (partSize.x - 1));
-        const tx = txRaw >= levelGen.size.x ? txRaw - 1 : txRaw;
-        const px = txRaw >= levelGen.size.x ? 2 : pos.x % (partSize.x - 1);
+        const tyRaw = Math.floor(pos.y / (partSize.y - overlap));
+        const ty = tyRaw >= levelGen.size.y ? levelGen.size.y - 1
+            : tyRaw;
+        const py = tyRaw >= levelGen.size.y ? partSize.y - (actualLevelSize.y - pos.y)
+            : pos.y % (partSize.y - overlap);
+
+        const txRaw = Math.floor(pos.x / (partSize.x - overlap));
+        const tx = txRaw >= levelGen.size.x ? levelGen.size.x - 1
+            : txRaw;
+        const px = txRaw >= levelGen.size.x ? partSize.x - (actualLevelSize.x - pos.x)
+            : pos.x % (partSize.x - overlap);
 
         const part = levelGen.tiles[ty]?.[tx]?.part;
 
