@@ -19,10 +19,11 @@ export type LevelPart = TileGrid & {
     allowedRight_: number[],
 };
 
-export const extractLevelParts = (levelPartsSource: string, options?: { partSize?: Vector2, overlap?: number }): LevelPart[] => {
+export const extractLevelParts = (levelPartsSource: string, options?: { partSize?: Vector2, overlap?: number, mirror?: boolean }): LevelPart[] => {
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
         overlap = 1,
+        mirror = true,
     } = options ?? {};
 
     const lines = levelPartsSource.split('\n')
@@ -49,7 +50,7 @@ export const extractLevelParts = (levelPartsSource: string, options?: { partSize
             });
             const part: LevelPart = {
                 index: 0,
-                key: tiles.map(rows => rows.map(r => r.symbol).join('')).join(''),
+                key: tiles.map(rows => rows.map(r => r.symbol).join('')).join('\n'),
                 size: partSize,
                 tiles,
                 isEdgeBottom: yBot === 0,

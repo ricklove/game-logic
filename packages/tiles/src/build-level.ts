@@ -120,7 +120,9 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
 
         const minLength = Math.min(...remainingTiles.map(x => x.possiblePartIndexes.length));
         const lowEntropyTiles = remainingTiles.filter(x => x.possiblePartIndexes.length === minLength);
-        const nextTile = randomizer.randomItem(lowEntropyTiles);
+        // Pick the left bottom tile (to avoid the middle)
+        const nextTile = lowEntropyTiles[0];
+        //const nextTile = randomizer.randomItem(lowEntropyTiles);
         const partIndex = randomizer.randomItem(nextTile.possiblePartIndexes);
 
         collapseTile(nextTile, [partIndex]);
@@ -128,6 +130,7 @@ export const buildLevel = (levelPartsSource: string, levelSize: Vector2, options
 
         if (remainingTiles.some(x => !x.possiblePartIndexes.length)) {
             // Contradiction!
+            console.error('Contradiction!', { fails: remainingTiles.filter(x => !x.possiblePartIndexes.length) });;
             break;
         }
 
