@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
 import { createRandomizer, Int32, ValueTypes, delay } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
-import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel, BuildLevelResult, levelPartsSource_castleRooms, levelPartsSource_castleRoutes } from '@local/tiles';
+import { Tile, TileGrid, createTileGrid, extractLevelParts, levelPartsSource_castle, LevelPart, buildLevel_waveFunctionCollapse, BuildLevelResult, levelPartsSource_castleRooms, levelPartsSource_castleRoutes } from '@local/tiles';
 import { JSX } from 'preact';
 
 
@@ -59,7 +59,7 @@ const Controls = ({
         overlap,
       } = settingsRef.current;
 
-      const results = await buildLevel(levelPartsSource_castleRoutes, ValueTypes.Vector2(levelSize), {
+      const results = await buildLevel_waveFunctionCollapse(levelPartsSource_castleRoutes, ValueTypes.Vector2(levelSize), {
         randomizer: createRandomizer(seed),
         maxSteps,
         partSize: ValueTypes.Vector2({ x: partSize, y: partSize }),

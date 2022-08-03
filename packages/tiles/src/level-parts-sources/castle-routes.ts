@@ -1,26 +1,35 @@
 export const levelPartsSource_castleRoutes = `
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-$                                                                                         $
-$                                                                                         $
-$                GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG                 $
-$               S       L               J             L   L      L       S                $
-$              S        L               GG            L   L      L        S               $
-$         GGGGG        GGG               J           GGGGGGGGGGGGGG        GGGGG          $
-$        S             S               GGG                 L      S             S         $
-$       S             S                J                   L       S             S        $
-$      S             S            GJJGGGGGGJJG             L        S             S       $
-$     GGGGGGGGGGGGGGGGG                 J              GGGGGGGGGGGGGGGGGGGGGGGGGGGGG      $
-$       L            S         GJJ  JJGGGGG             L           S            L        $
-$       L             S          GGGG    S              L          S             L        $
-$       L              S                  S             L         S              L        $
-$      GGGG            GGG            GGGGGGGGGG       GGGGG    GGG            GGGG       $
-$        S              S             J        J          L      S              S         $
-$       S              S              J        J          L       S              S        $
-$      S              S           GGGGG        GGG     GGGGG       S              S       $
-$     GGGGG          GGGG          L              S     L        GGGG          GGGGG      $
-$        S             S           L               S    L         S             S         $
-$       S               S        GGGGG              SGGGGGGG     S               S        $
-$      S                 S       J   J                    L     S                 S       $
-$GGGGGGGG               GGG     GG   GG                  GGG   GGG               GGGGGGGGG$
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$                                                                                                 $
+$                                                                                                 $
+$                                                                                                 $
+$                                                  SGGS                                           $
+$                GGGGGGGGGGGGGGGGGS    SGGGGGGGGGGG    GGGGGGGGGGGGGGGGGGGGGGGGGG                 $
+$               S       L          GGGG    L               L   L         L       S                $
+$              S        L                  GGGG*           L   L         L        S               $
+$         GGGGG        GGG                     GGGG**     GGGGGGGGGGGGGGGGG        GGGGG          $
+$        S             S                            GGG          L        S             S         $
+$       S             S                   **GGGG**   L           L         S             S        $
+$      S             S                **GGG      GGGGGG          L          S             S       $
+$     GGGGGGGGGGGGGGGGGGGG      GGGGGGG                     GGGGGGG     GGGGGGGGGGGGGGGGGGGG      $
+$         L             S        L                           L           S              L         $
+$    GGGGGGGGG      GGGG        GGGGG                       GGGGG         GGGG     GGGGGGGGG      $
+$     L       S    S               L                           L              S   S       L       $
+$    GGGGGG    GGGGGGGG         GGGGG                       GGGGG          GGGGGGG      GGGG      $
+$       L            S           L                           L              S            L        $
+$       L             S          L                           L             S             L        $
+$       L              S         L         **GGGGGGG**       L            S              L        $
+$      GGGG            GGG      GGGGG*   *GG    L    GGG    GGGGG       GGG            GGGG       $
+$        S              S            GGGGG      L              L         S              S         $
+$       S              S                        L              L          S              S        $
+$      S              S                    GGGGGGGGGG       GGGGG          S              S       $
+$     GGGGG          GGGG                  *        *        L           GGGG          GGGGG      $
+$        S             S             G*   *G        GGGS     L            S             S         $
+$       S               S             GGGGG             GGGGGGGGG        S               S        $
+$      S                 S            *   *                    L        S                 S       $
+$     GGG               GGG          GG   GG                  GGG      GG                 GG      $
+$                                                                                                 $
+$                                                                                                 $
+$                                                                                                 $
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 `;

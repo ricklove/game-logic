@@ -1,21 +1,20 @@
 import { createRandomizer, delay, Int32, Randomizer, ValueTypes, Vector2 } from "@local/core";
-import { send } from "process";
 import { AllowedSet, extractLevelParts, LevelPart } from "./level-parts";
 import { createTileGrid } from "./tile-grid";
 import { Tile, TileGrid } from "./types";
 
-type WaveFormCollapseTile = Tile & {
+type WaveFunctionCollapseTile = Tile & {
     possiblePartIndexes: Int32[],
     part: undefined | LevelPart;
 };
 export type BuildLevelResult = {
     level: TileGrid<Tile>,
     levelAsParts?: TileGrid<Tile>,
-    levelGen?: TileGrid<WaveFormCollapseTile>,
+    levelGen?: TileGrid<WaveFunctionCollapseTile>,
     levelParts?: LevelPart[],
 };
-export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, overlap?: number, randomizer?: Randomizer, maxSteps?: number, onProgress?: (partial: BuildLevelResult) => void }): Promise<BuildLevelResult> => {
-    // Use wave form collapse
+export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, overlap?: number, randomizer?: Randomizer, maxSteps?: number, onProgress?: (partial: BuildLevelResult) => void }): Promise<BuildLevelResult> => {
+    // Use wave function collapse
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
         overlap = 2,
@@ -30,7 +29,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
         x: Math.ceil((levelSize.x - overlap) / (partSize.x - overlap)),
         y: Math.ceil((levelSize.y - overlap) / (partSize.y - overlap)),
     })
-    const levelGen = createTileGrid<WaveFormCollapseTile>(levelGenSize, pos => ({
+    const levelGen = createTileGrid<WaveFunctionCollapseTile>(levelGenSize, pos => ({
         symbol: ValueTypes.Char('.'),
         position: pos,
         possiblePartIndexes: [...new Array(levelParts.length)].map((_, iPart) => ValueTypes.Int32(iPart)),
@@ -123,7 +122,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
     };
 
 
-    const changedTiles = [] as WaveFormCollapseTile[];
+    const changedTiles = [] as WaveFunctionCollapseTile[];
 
     // const intersection = <T extends string | number>(a: T[], b: T[]): T[] => {
     //     const set = new Set(b);
@@ -138,7 +137,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
         return b.flatMap(x => x);
     };
 
-    const collapseTile = (tile: undefined | WaveFormCollapseTile, allowedPartIndexes: AllowedSet) => {
+    const collapseTile = (tile: undefined | WaveFunctionCollapseTile, allowedPartIndexes: AllowedSet) => {
         iterations_collapseTile++;
 
         if (!tile || tile.part) { return; }
@@ -174,7 +173,7 @@ export const buildLevel = async (levelPartsSource: string, levelSize: Vector2, o
         changedTiles.push(tile);
     };
 
-    const expandFromChangedTile = (tile: WaveFormCollapseTile) => {
+    const expandFromChangedTile = (tile: WaveFunctionCollapseTile) => {
         iterations_expandFromChangedTile++;
 
         // console.log('expandFromChangedTile', { iterations, ...tile?.position, tile });
