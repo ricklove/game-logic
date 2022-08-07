@@ -94,8 +94,8 @@ const MemoryQuestionsView = () => {
             <div className='flex flex-row'>
                 <div className='flex-1' />
                 <button
-                    className={`m-1 p-1 min-w-[60px] min-h-[24px] bg-blue-400 active:bg-blue-600`}
-                    onClick={() => setShowMenu(s => !s)}>Menu</button>
+                    className={`m-1 min-w-[16px] min-h-[16px] bg-blue-400 active:bg-blue-600`}
+                    onClick={() => setShowMenu(s => !s)}>ℹ</button>
             </div>
             {showMenu && (
                 <MemoryQuestionMenu
