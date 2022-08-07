@@ -47,12 +47,12 @@ module.exports = {
       //   format: ['PascalCase'],
       //   prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
       // },
-      // // const CAN_BE_UPPER, or Pascal (React Components)
-      // {
-      //   selector: 'variable',
-      //   modifiers: ['const'],
-      //   format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
-      // },
+      // const CAN_BE_UPPER, or Pascal (React Components)
+      {
+        selector: 'variable',
+        modifiers: ['const'],
+        format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+      },
       // type P<TStartsWithT>
       {
         selector: 'typeParameter',

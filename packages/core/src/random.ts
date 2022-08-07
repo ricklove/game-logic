@@ -1,4 +1,4 @@
-import { Int32, ValueTypes } from "./types";
+import { Int32, ValueTypes } from './types';
 
 export const createRandomizer = (seedSource: string) => {
     const rando = createRandomGenerator(seedSource);

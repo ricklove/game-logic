@@ -12,22 +12,22 @@ export const useAsyncWorker = () => {
 
     const [{ loading, error, progress }, setLoadingError] = useState({
         loading: false,
-        error: null as null | { message: string, innerError: unknown },
+        error: null as null | { message: string; innerError: unknown },
         progress: {
-            message: '',
+            message: ``,
             ratioComplete: 0,
-        }
+        },
     });
 
     const doWork = (work: (stopIfObsolete: () => void, updateProgress: UpdateProgressCallback) => Promise<void>, options?: { messageIfError?: string }) => {
 
-        const UNMOUNTED = 'UNMOUNTED';
+        const UNMOUNTED = `UNMOUNTED`;
         const stopIfObsolete = () => {
             if (!isMounted.current) {
                 throw UNMOUNTED;
             }
         };
-        let timeoutId = setTimeout(() => { }, 0);
+        const timeoutId = setTimeout(() => { /* empty */ }, 0);
         const updateAutoProgressTicker = (progressMessage: string) => {
             clearTimeout(timeoutId);
             setTimeout(() => {
@@ -41,7 +41,7 @@ export const useAsyncWorker = () => {
                         progress: {
                             ...s.progress,
                             ratioComplete: 1 - ((1 - s.progress.ratioComplete) * 0.98),
-                        }
+                        },
                     };
                 });
 
@@ -55,20 +55,20 @@ export const useAsyncWorker = () => {
                 progress: {
                     message: progressMessage,
                     ratioComplete: 1 - ((1 - s.progress.ratioComplete) * 0.9),
-                }
-            }))
+                },
+            }));
             updateAutoProgressTicker(progressMessage);
         };
 
         (async () => {
             if (!isMounted.current) { return; }
-            setLoadingError({ loading: true, error: null, progress: { message: '', ratioComplete: 0 } });
+            setLoadingError({ loading: true, error: null, progress: { message: ``, ratioComplete: 0 } });
 
             try {
                 await work(stopIfObsolete, updateProgress);
                 stopIfObsolete();
                 clearTimeout(timeoutId);
-                setLoadingError({ loading: false, error: null, progress: { message: '', ratioComplete: 1 } });
+                setLoadingError({ loading: false, error: null, progress: { message: ``, ratioComplete: 1 } });
             } catch (err) {
                 clearTimeout(timeoutId);
 
@@ -77,7 +77,7 @@ export const useAsyncWorker = () => {
                     return;
                 }
 
-                console.error('doWork Error: ', { err });
+                console.error(`doWork Error: `, { err });
                 setLoadingError(s => ({
                     loading: false,
                     error: { message: options?.messageIfError ?? (err as Record<string, string>).message ?? `Error`, innerError: err },

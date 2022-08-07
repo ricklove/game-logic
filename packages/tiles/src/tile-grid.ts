@@ -1,5 +1,5 @@
-import { Vector2, Int32, Char, ValueTypes } from "@local/core";
-import { TileGrid, Tile } from "./types";
+import { ValueTypes, Vector2 } from '@local/core';
+import { Tile, TileGrid } from './types';
 
 export const createTileGrid = <TTile extends Tile = Tile>(size: Vector2, createTile: (position: Vector2) => TTile): TileGrid<TTile> => {
     return {
@@ -11,6 +11,6 @@ export const createTileGrid = <TTile extends Tile = Tile>(size: Vector2, createT
                     y: j,
                 }));
                 return tile;
-            }))
+            })),
     };
 };

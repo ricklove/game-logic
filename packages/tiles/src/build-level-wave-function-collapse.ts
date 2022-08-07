@@ -1,19 +1,19 @@
-import { createRandomizer, delay, Int32, Randomizer, ValueTypes, Vector2 } from "@local/core";
-import { AllowedSet, extractLevelParts, LevelPart } from "./level-parts";
-import { createTileGrid } from "./tile-grid";
-import { Tile, TileGrid } from "./types";
+import { createRandomizer, delay, Int32, Randomizer, ValueTypes, Vector2 } from '@local/core';
+import { AllowedSet, extractLevelParts, LevelPart } from './level-parts';
+import { createTileGrid } from './tile-grid';
+import { Tile, TileGrid } from './types';
 
 type WaveFunctionCollapseTile = Tile & {
-    possiblePartIndexes: Int32[],
+    possiblePartIndexes: Int32[];
     part: undefined | LevelPart;
 };
 export type BuildLevelResult = {
-    level: TileGrid<Tile>,
-    levelAsParts?: TileGrid<Tile>,
-    levelGen?: TileGrid<WaveFunctionCollapseTile>,
-    levelParts?: LevelPart[],
+    level: TileGrid<Tile>;
+    levelAsParts?: TileGrid<Tile>;
+    levelGen?: TileGrid<WaveFunctionCollapseTile>;
+    levelParts?: LevelPart[];
 };
-export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2, overlap?: number, randomizer?: Randomizer, maxSteps?: number, onProgress?: (partial: BuildLevelResult) => void }): Promise<BuildLevelResult> => {
+export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, levelSize: Vector2, options?: { partSize?: Vector2; overlap?: number; randomizer?: Randomizer; maxSteps?: number; onProgress?: (partial: BuildLevelResult) => void }): Promise<BuildLevelResult> => {
     // Use wave function collapse
     const {
         partSize = ValueTypes.Vector2({ x: 3, y: 3 }),
@@ -28,9 +28,9 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
     const levelGenSize = ValueTypes.Vector2({
         x: Math.ceil((levelSize.x - overlap) / (partSize.x - overlap)),
         y: Math.ceil((levelSize.y - overlap) / (partSize.y - overlap)),
-    })
+    });
     const levelGen = createTileGrid<WaveFunctionCollapseTile>(levelGenSize, pos => ({
-        symbol: ValueTypes.Char('.'),
+        symbol: ValueTypes.Char(`.`),
         position: pos,
         possiblePartIndexes: [...new Array(levelParts.length)].map((_, iPart) => ValueTypes.Int32(iPart)),
         part: undefined,
@@ -54,9 +54,9 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
                 const part = levelGen.tiles[ty]?.[tx]?.part;
 
                 return {
-                    symbol: part?.tiles[py]?.[px]?.symbol ?? ValueTypes.Char(' '),
+                    symbol: part?.tiles[py]?.[px]?.symbol ?? ValueTypes.Char(` `),
                     position: pos,
-                }
+                };
             });
             return level;
         };
@@ -84,9 +84,9 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
                 const part = levelGen.tiles[ty]?.[tx]?.part;
 
                 return {
-                    symbol: part?.tiles[py][px].symbol ?? ValueTypes.Char(' '),
+                    symbol: part?.tiles[py][px].symbol ?? ValueTypes.Char(` `),
                     position: pos,
-                }
+                };
             });
 
             return level;
@@ -111,7 +111,7 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
         if (!isDone && Date.now() < lastProgressTime + TIME_PROGRESS_MS) { return; }
         lastProgressTime = Date.now();
 
-        console.log('sendProgress', {
+        console.log(`sendProgress`, {
             iterations_loop,
             iterations_collapseTile,
             iterations_expandFromChangedTile,
@@ -157,11 +157,11 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
             const iPart = tile.possiblePartIndexes[0];
             tile.part = levelParts[iPart];
 
-            console.log('collapseTile: part set', { iPart, tile });
+            console.log(`collapseTile: part set`, { iPart, tile });
         }
 
         if (tile.possiblePartIndexes.length === 0) {
-            console.error('No possible part available', {
+            console.error(`No possible part available`, {
                 tile,
                 oldPossiblePartIndexes,
                 allowedPartIndexes,
@@ -238,7 +238,7 @@ export const buildLevel_waveFunctionCollapse = async (levelPartsSource: string, 
 
         if (remainingTiles.some(x => !x.possiblePartIndexes.length)) {
             // Contradiction!
-            console.error('Contradiction!', { fails: remainingTiles.filter(x => !x.possiblePartIndexes.length) });;
+            console.error(`Contradiction!`, { fails: remainingTiles.filter(x => !x.possiblePartIndexes.length) });
             break;
         }
 

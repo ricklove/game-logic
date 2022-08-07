@@ -1,9 +1,9 @@
-import { Int32, ValueTypes } from "./types";
+import { Int32, ValueTypes } from './types';
 
 type MutableProperties = "copyWithin" | "fill" | "reverse" | "set" | "sort";
-export interface ReadonlyUint32Array extends Omit<Uint32Array, MutableProperties> {
+export type ReadonlyUint32Array = {
     readonly [n: number]: number;
-}
+} & Omit<Uint32Array, MutableProperties>;
 
 const WORD_SIZE = 32;
 
@@ -27,8 +27,8 @@ const createBitField = (size: Int32, indexOfTrueBits?: Int32[]) => {
     } as const;
 };
 const createBitFieldReadOnly = createBitField as (size: Int32, indexOfTrueBits?: Int32[]) => {
-    readonly size: Int32,
-    readonly words: ReadonlyUint32Array,
+    readonly size: Int32;
+    readonly words: ReadonlyUint32Array;
 };
 
 const equals = (a: BitField, b: BitField): boolean => {
