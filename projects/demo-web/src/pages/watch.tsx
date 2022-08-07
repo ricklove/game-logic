@@ -2,7 +2,7 @@ export const WatchPage = () => {
 
     return (
         <>
-            <div className='bg-black text-white w-[100vw] h-[100vh] text-[12px] font-sans'>
+            <div className='bg-black text-white w-[100vw] h-[100vh]'>
                 <div className='mb-2'>In the beginning</div>
                 <div>
                     <div className='flex flex-row flex-wrap justify-center items-center'>
