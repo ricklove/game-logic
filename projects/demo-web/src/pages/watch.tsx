@@ -5,7 +5,7 @@ const { randomItem, shuffle } = createRandomizer(`${Date.now()}`);
 
 type Mode = 'whole' | 'letter';
 const normalizeAnswer = (text: string, mode: Mode) => {
-    const t = text
+    const t = (text || ``)
         .replace(/[^A-Za-z0-9]/g, ``)
         .toLowerCase()
         ;
@@ -166,10 +166,18 @@ const MemoryQuestionView = ({
     }, [phrase, mode]);
 
     const nextQuestion = (nextPartIndex: number) => {
-        setPartIndex(nextPartIndex);
 
         const parts = partsRef.current;
-        const nextPart = parts[nextPartIndex];
+        let nextPart = parts[nextPartIndex];
+        while (!normalizeAnswer(nextPart, mode)
+            && nextPartIndex < parts.length
+        ) {
+            nextPartIndex++;
+            nextPart = parts[nextPartIndex];
+        }
+
+        setPartIndex(nextPartIndex);
+
         if (!nextPart) {
             setOptions([]);
             return;
