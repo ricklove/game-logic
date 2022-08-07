@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Tile, TileGrid } from "@local/tiles";
+import React from 'react';
+import { Tile, TileGrid } from '@local/tiles';
 
 export const TileGridViewer = <T extends Tile>({
     tileGrid,
@@ -11,13 +11,13 @@ export const TileGridViewer = <T extends Tile>({
 
     return (
         <div
-            className="border-solid border-lime-600 border-2"
+            className='border-solid border-lime-600 border-2'
         >
             {[...new Array(tileGrid.size.y)]
                 .map((_, j) => j)
                 .reverse().map(j => (
                     <React.Fragment key={j}>
-                        <div className="flex flex-row">
+                        <div className='flex flex-row'>
                             {[...new Array(tileGrid.size.x)].map((_, i) => (
                                 <React.Fragment key={i}>
                                     {CustomComponent && (<CustomComponent tile={tileGrid.tiles[j][i]} />)}

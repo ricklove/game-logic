@@ -1,9 +1,8 @@
-import { Fragment } from 'preact';
-import { TilesPage } from './pages/tiles';
+import { Fragment } from 'react';
+import { TilesPage } from '@local/tiles-ui';
 import { WatchPage } from './pages/watch';
 
-
-export function App() {
+export const App = () => {
 
   const pages = [`tiles`, `watch`, `home`] as const;
   const page: typeof pages[number] = window.location.href.includes(`/tiles`) ? `tiles`
@@ -30,4 +29,4 @@ export function App() {
       )}
     </>
   );
-}
+};

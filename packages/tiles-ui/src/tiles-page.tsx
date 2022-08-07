@@ -1,12 +1,10 @@
+import { useEffect, useRef, useState } from 'react';
 import { createRandomizer, ValueTypes } from '@local/core';
 import { useAsyncWorker } from '@local/core-ui';
 import { buildLevel_waveFunctionCollapse, BuildLevelResult, levelPartsSource_castleRoutes } from '@local/tiles';
 import { LevelPartReference, LevelPartsViewer, TileGridViewer } from '@local/tiles-ui';
-import { JSX } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
 
-
-export function TilesPage() {
+export const TilesPage = () => {
 
     const [results, setResults] = useState(undefined as undefined | BuildLevelResult);
 
@@ -18,7 +16,7 @@ export function TilesPage() {
             </div>
         </>
     );
-}
+};
 
 const Controls = ({
     onResults,

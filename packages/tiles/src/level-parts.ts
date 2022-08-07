@@ -1,4 +1,4 @@
-import { Int32, ValueTypes, Vector2 } from '@local/core/lib/src/types';
+import { Int32, ValueTypes, Vector2 } from '@local/core';
 import { Tile, TileGrid } from './types';
 
 export type AllowedSet = Int32[];

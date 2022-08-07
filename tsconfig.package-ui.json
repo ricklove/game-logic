@@ -9,8 +9,4 @@
         "isolatedModules": true,
         "outDir": "./lib",
     },
-    "include": [
-        "src",
-        "index.ts",
-    ],
 }
