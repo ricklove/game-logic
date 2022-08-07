@@ -1,15 +1,20 @@
-import { Int32, ValueTypes } from './types';
+import { Float32, Int32, ValueTypes } from './types';
 
 export const createRandomizer = (seedSource: string) => {
     const rando = createRandomGenerator(seedSource);
     const result = {
-        random: () => ValueTypes.Float32(rando.random()),
-        randomInt: (minInclusive: Int32, maxExclusive: Int32) =>
+        random: (): Float32 => ValueTypes.Float32(rando.random()),
+        randomInt: (minInclusive: Int32, maxExclusive: Int32): Int32 =>
             ValueTypes.Int32(Math.floor(rando.random() * maxExclusive - minInclusive) + minInclusive),
-        randomIndex: <T>(items: T[]) =>
+        randomIndex: <T>(items: T[]): Int32 =>
             ValueTypes.Int32(Math.floor(rando.random() * items.length)),
-        randomItem: <T>(items: T[]) =>
+        randomItem: <T>(items: T[]): T =>
             items[ValueTypes.Int32(Math.floor(rando.random() * items.length))],
+        shuffle: <T>(items: T[]): T[] =>
+            items.map(x => ({ x, i: result.random() }))
+                .sort((a, b) => a.i - b.i)
+                .map(x => x.x)
+        ,
     };
     return result;
 };
