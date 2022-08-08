@@ -7,16 +7,38 @@ export const getVerses = () => {
                 .map(x => x.trim())
                 ;
             return ({
-                verse: v.join(` `),
+                verses: v.filter(x => x),
                 reference: r.replace(/^#/, ``).trim(),
             });
         })
-        .filter(x => x.verse && x.reference)
+        .filter(x => x.verses.length && x.reference)
+        ;
+};
+
+export const getVerseProblems = () => {
+    return getVerses()
+        .map(x => {
+            return {
+                section: x.reference,
+                problems: [
+                    {
+                        name: x.reference,
+                        prephrase: ``,
+                        phrase: x.reference,
+                    },
+                    ...x.verses.map((v, i) => ({
+                        name: `${x.reference} [${i + 1}/${x.verses.length}]`,
+                        prephrase: `${x.reference}\n${x.verses.slice(0, i).join(` `)}`,
+                        phrase: v,
+                    })),
+                ],
+            };
+        })
         ;
 };
 
 const versesRaw = `
-# Matthew 5:1-11
+# Matthew 5:1-12
 1 Seeing the crowds, he went up on the mountain, and when he sat down, his disciples came to him. 
 2 And he opened his mouth and taught them, saying:
 3 “Blessed are the poor in spirit, for theirs is the kingdom of heaven.

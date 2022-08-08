@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createRandomizer, ValueTypes } from '@local/core';
-import { getVerses } from './verses';
+import { getVerseProblems } from './verses';
 
 const { randomItem, randomInt, shuffle } = createRandomizer(`${Date.now()}`);
 
@@ -20,33 +20,68 @@ const normalizeAnswer = (text: string, mode: Mode) => {
 
 const getProblems = () => {
 
-    const problemsFromVerses = getVerses()
-        .map(x => ({
-            phrase: `${x.reference}\n${x.verse}`,
-            name: x.reference,
-        }))
-        ;
-    const problems = [
-        ...problemsFromVerses.map(x => ({
-            name: `Words - ${x.name}`,
-            mode: `whole` as Mode,
-            phrase: x.phrase,
-        })),
-        ...problemsFromVerses.map(x => ({
-            name: `1st Letter - ${x.name}`,
-            mode: `letter` as Mode,
-            phrase: x.phrase,
-        })),
+    const problemsFromVerses = getVerseProblems();
+
+    const subjectsRaw = [
+        {
+            subject: `Memory Verses - Word Answers`,
+            sections: problemsFromVerses.map(s => ({
+                section: s.section,
+                problems: s.problems.map(x => ({
+                    name: `Words - ${x.name}`,
+                    mode: `whole` as Mode,
+                    phrase: x.phrase,
+                    prephrase: x.prephrase,
+                })),
+            })),
+        },
+        {
+            subject: `Memory Verses - Letter Answers`,
+            sections: problemsFromVerses.map(s => ({
+                section: s.section,
+                problems: s.problems.map(x => ({
+                    name: `1st Letter - ${x.name}`,
+                    mode: `letter` as Mode,
+                    phrase: x.phrase,
+                    prephrase: x.prephrase,
+                })),
+            })),
+        },
     ];
 
-    console.log(`problems`, problems);
+    const subjects = subjectsRaw
+        .map(sub => ({
+            ...sub,
+            sections: sub
+                .sections.map(sec => ({
+                    ...sec,
+                    problems: sec
+                        .problems.map(p => ({
+                            ...p,
+                            subject: sub.subject,
+                            section: sec.section,
+                        }))
+                        .map(p => ({
+                            ...p,
+                            key: `${p.subject}::${p.section}::${p.name}`,
+                        })),
+                })),
+        }));
 
-    return problems;
+    console.log(`problems`, subjects);
+
+    return {
+        subjects,
+    };
 };
 
+type Subject = ReturnType<typeof getProblems>['subjects'][number];
+type Section = Subject['sections'][number];
+type Problem = Section['problems'][number];
 
 export const MemoryQuestionsView = () => {
-    const problems = useMemo(() => getProblems(), []);
+    const { subjects } = useMemo(() => getProblems(), []);
+    const problems = subjects.flatMap(sub => sub.sections).flatMap(sec => sec.problems);
 
     const [showMenu, setShowMenu] = useState(false);
 
@@ -72,14 +107,16 @@ export const MemoryQuestionsView = () => {
             </div>
             {showMenu && (
                 <MemoryQuestionMenu
-                    problems={problems}
-                    onChangeProblem={x => { setProblemIndex(x); setShowMenu(false); }}
+                    subjects={subjects}
+                    onChangeProblem={x => {
+                        setProblemIndex(problems.findIndex(p => p.key === x));
+                        setShowMenu(false);
+                    }}
                 />
             )}
             {!showMenu && (
                 <MemoryQuestionView
-                    phrase={problem.phrase}
-                    mode={problem.mode}
+                    problem={problem}
                     onDone={() => nextProblem()}
                 />
             )}
@@ -88,19 +125,40 @@ export const MemoryQuestionsView = () => {
 };
 
 const MemoryQuestionMenu = ({
-    problems,
+    subjects,
     onChangeProblem,
 }: {
-    problems: readonly { name: string }[];
-    onChangeProblem: (problemIndex: number) => void;
+        subjects: Subject[];
+        onChangeProblem: (problemKey: string) => void;
 }) => {
+
+    const [subject, setSubject] = useState(undefined as undefined | string);
+    const [section, setSection] = useState(undefined as undefined | string);
+
+    const sub = subjects.find(s => s.subject === subject);
+    const sec = sub?.sections.find(s => s.section === section);
+
     return (
         <>
-            {problems.map((x, i) => (
+            {!sub && subjects.map(s => (
+                <Fragment key={s.subject} >
+                    <button
+                        className={`m-1 p-1 min-w-[60px] min-h-[24px] bg-blue-400 active:bg-blue-600`}
+                        onClick={() => setSubject(s.subject)}>{s.subject}</button>
+                </Fragment>
+            ))}
+            {!sec && sub?.sections.map(s => (
+                <Fragment key={s.section} >
+                    <button
+                        className={`m-1 p-1 min-w-[60px] min-h-[24px] bg-blue-400 active:bg-blue-600`}
+                        onClick={() => setSection(s.section)}>{s.section}</button>
+                </Fragment>
+            ))}
+            {sec && sec.problems.map((x, i) => (
                 <Fragment key={i}>
                     <button
                         className={`m-1 p-1 min-w-[60px] min-h-[24px] bg-blue-400 active:bg-blue-600`}
-                        onClick={() => onChangeProblem(i)}>{x.name}</button>
+                        onClick={() => onChangeProblem(x.key)}>{x.name}</button>
                 </Fragment>
             ))}
         </>
@@ -135,14 +193,18 @@ const getWrongOptions = (answer: string, choiceSource: string[], mode: Mode) => 
 };
 
 const MemoryQuestionView = ({
-    phrase,
-    mode,
+    problem,
     onDone,
 }: {
-    phrase: string;
-    mode: Mode;
+        problem: Problem;
     onDone: () => void;
 }) => {
+
+    const {
+        mode,
+        phrase,
+        prephrase,
+    } = problem;
 
     const targetRef = useRef(null as null | HTMLSpanElement);
     const scrollToTarget = () => {
@@ -185,12 +247,12 @@ const MemoryQuestionView = ({
             nextPart = parts[nextPartIndex];
         }
 
-        setPartIndex(nextPartIndex);
-
         if (!nextPart) {
-            setOptions([]);
+            onDone();
             return;
         }
+
+        setPartIndex(nextPartIndex);
 
         const wrongOptions = getWrongOptions(nextPart, parts, mode);
 
@@ -224,8 +286,9 @@ const MemoryQuestionView = ({
         <>
             <div className=''>
                 <div className='mb-2 whitespace-pre-line'>
-                    <span>{completed}</span>
-                    <span>{!isDone ? ` ___` : ``}</span>
+                    <span>{prephrase}&nbsp;</span>
+                    <span>{completed}&nbsp;</span>
+                    <span>{!isDone ? `___` : ``}</span>
                     <span className='inline-block relative'>
                         <span ref={targetRef} className='absolute top-[-2rem]' />
                     </span>
@@ -247,11 +310,11 @@ const MemoryQuestionView = ({
                         </div>
                     </div>
                 )}
-                {isDone && (
+                {/* {isDone && (
                     <button
                         className={`m-1 p-1 min-w-[60px] min-h-[24px] bg-blue-400 active:bg-blue-600`}
                         onClick={() => onDone()}>Next</button>
-                )}
+                )} */}
 
                 <div className='h-[50vh]' />
             </div>
