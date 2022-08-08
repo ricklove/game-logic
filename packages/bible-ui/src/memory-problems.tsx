@@ -7,8 +7,8 @@ const { randomItem, randomInt, shuffle } = createRandomizer(`${Date.now()}`);
 type Mode = 'whole' | 'letter';
 const normalizeAnswer = (text: string, mode: Mode) => {
     const t = (text || ``)
-        .replace(/[^A-Za-z0-9]/g, ``)
-        .toLowerCase()
+        .replace(/[^\w\d]+/g, ``)
+        .toLocaleLowerCase()
         ;
 
     if (mode === `letter`) {
@@ -166,11 +166,11 @@ const MemoryQuestionMenu = ({
 };
 
 
-const getWrongOptions = (answer: string, choiceSource: string[], mode: Mode) => {
+const getWrongOptions = (correctAnswer: string, choiceSource: string[], mode: Mode) => {
 
     const getRandomOptions = () => {
-        if (Number.isInteger(Number(answer))) {
-            const n = Number(answer);
+        if (Number.isInteger(Number(correctAnswer))) {
+            const n = Number(correctAnswer);
             return [
                 n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
                 n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
@@ -188,7 +188,7 @@ const getWrongOptions = (answer: string, choiceSource: string[], mode: Mode) => 
     return [... new Set(
         getRandomOptions()
             .filter(x => normalizeAnswer(x, mode))
-            .filter(x => normalizeAnswer(x, mode) !== normalizeAnswer(answer, mode)),
+            .filter(x => normalizeAnswer(x, mode) !== normalizeAnswer(correctAnswer, mode)),
     )];
 };
 
