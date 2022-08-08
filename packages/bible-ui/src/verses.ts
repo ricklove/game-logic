@@ -27,7 +27,8 @@ const versesRaw = `
 8 “Blessed are the pure in heart, for they shall see God.
 9 “Blessed are the peacemakers, for they shall be called sons[a] of God.
 10 “Blessed are those who are persecuted for righteousness' sake, for theirs is the kingdom of heaven.
-11 “Blessed are you when others revile you and persecute you and utter all kinds of evil against you falsely on my account. 12 Rejoice and be glad, for your reward is great in heaven, for so they persecuted the prophets who were before you.
+11 “Blessed are you when others revile you and persecute you and utter all kinds of evil against you falsely on my account. 
+12 Rejoice and be glad, for your reward is great in heaven, for so they persecuted the prophets who were before you.
 
 # 1 Corinthians 13:4-5
 Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful. 
