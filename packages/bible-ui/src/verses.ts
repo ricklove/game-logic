@@ -7,7 +7,7 @@ export const getVerses = () => {
                 .map(x => x.trim())
                 ;
             return ({
-                verse: v.join(`\n`),
+                verse: v.join(` `),
                 reference: r.replace(/^#/, ``).trim(),
             });
         })

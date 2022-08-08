@@ -22,7 +22,7 @@ const getProblems = () => {
 
     const problemsFromVerses = getVerses()
         .map(x => ({
-            phrase: `${x.reference} - ${x.verse}`,
+            phrase: `${x.reference}\n${x.verse}`,
             name: x.reference,
         }))
         ;
@@ -144,6 +144,15 @@ const MemoryQuestionView = ({
     onDone: () => void;
 }) => {
 
+    const targetRef = useRef(null as null | HTMLSpanElement);
+    const scrollToTarget = () => {
+        setTimeout(() => {
+            targetRef.current?.scrollIntoView({
+                behavior: `smooth`,
+            });
+        }, 10);
+    };
+
     const partsRef = useRef([] as string[]);
 
     const [partIndex, setPartIndex] = useState(0);
@@ -190,6 +199,8 @@ const MemoryQuestionView = ({
             isMarkedWrong: false,
             text: normalizeAnswer(x, mode),
         })));
+
+        scrollToTarget();
     };
 
     const answer = (value: typeof options[number]) => {
@@ -211,8 +222,11 @@ const MemoryQuestionView = ({
 
     return (
         <>
-            <div className='bg-black text-white w-[100vw] min-h-[100vh]'>
-                <div className='mb-2'>{completed}{!isDone ? ` ___` : ``}</div>
+            <div className=''>
+                <div className='mb-2 whitespace-pre-line'>
+                    <span>{completed}</span>
+                    <span ref={targetRef}>{!isDone ? ` ___` : ``}</span>
+                </div>
                 {!isDone && (
                     <div key={completed}>
                         <div className='flex flex-row flex-wrap justify-center items-center'>
@@ -236,7 +250,7 @@ const MemoryQuestionView = ({
                         onClick={() => onDone()}>Next</button>
                 )}
 
-                <div className='h-[25vh]' />
+                <div className='h-[50vh]' />
             </div>
         </>
     );

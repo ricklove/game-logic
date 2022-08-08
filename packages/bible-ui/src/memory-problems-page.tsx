@@ -2,6 +2,8 @@ import { MemoryQuestionsView } from './memory-problems';
 
 export const MemoryProblemsPage = () => {
     return (
-        <MemoryQuestionsView />
+        <div className=''>
+            <MemoryQuestionsView />
+        </div>
     );
 };
