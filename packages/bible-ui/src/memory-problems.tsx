@@ -225,7 +225,10 @@ const MemoryQuestionView = ({
             <div className=''>
                 <div className='mb-2 whitespace-pre-line'>
                     <span>{completed}</span>
-                    <span ref={targetRef}>{!isDone ? ` ___` : ``}</span>
+                    <span>{!isDone ? ` ___` : ``}</span>
+                    <span className='inline-block relative'>
+                        <span ref={targetRef} className='absolute top-[-2rem]' />
+                    </span>
                 </div>
                 {!isDone && (
                     <div key={completed}>
