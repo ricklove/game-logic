@@ -20,5 +20,8 @@
         {
             "path": "./packages/tiles-ui"
         },
+        {
+            "path": "./packages/bible-ui"
+        },
     ]
 }

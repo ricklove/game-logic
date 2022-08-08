@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { createRandomizer } from '@local/core';
+import { getVerses } from './verses';
 
 const { randomItem, shuffle } = createRandomizer(`${Date.now()}`);
 
@@ -17,37 +18,9 @@ const normalizeAnswer = (text: string, mode: Mode) => {
     return t;
 };
 
-export const WatchPage = () => {
-    return (
-        <MemoryQuestionsView />
-    );
-};
-
-
 const getProblems = () => {
 
-    const verses = `
-    Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful. :: 1 Corinthians 13:4-5
-    Jesus Christ is the same yesterday and today and forever. :: Hebrews 13:8
-    Seek the LORD and his strength; seek his presence continually! :: 1 Chronicles 16:11
-    Rejoice always :: 1 Thessalonians 5:16
-    When I am afraid, I put my trust in you. :: Psalm 56:3
-    Trust in the LORD, and do good; dwell in the land and befriend faithfulness :: Psalm 37:3
-    `;
-
-    const problemsFromVerses = verses
-        .split(`\n`)
-        .filter(x => x)
-        .map(x => {
-            const [v, r] = x.split(`::`)
-                .map(x => x.trim())
-                ;
-            return ({
-                verse: v,
-                reference: r,
-            });
-        })
-        .filter(x => x.verse && x.reference)
+    const problemsFromVerses = getVerses()
         .map(x => ({
             phrase: `${x.reference} - ${x.verse}`,
             name: x.reference,
@@ -72,7 +45,7 @@ const getProblems = () => {
 };
 
 
-const MemoryQuestionsView = () => {
+export const MemoryQuestionsView = () => {
     const problems = useMemo(() => getProblems(), []);
 
     const [showMenu, setShowMenu] = useState(false);

@@ -1,12 +1,12 @@
 import { Fragment } from 'react';
+import { MemoryProblemsPage } from '@local/bible-ui';
 import { TilesPage } from '@local/tiles-ui';
-import { WatchPage } from './pages/watch';
 
 export const App = () => {
 
-  const pages = [`tiles`, `watch`, `home`] as const;
+  const pages = [`tiles`, `bible`, `home`] as const;
   const page: typeof pages[number] = window.location.href.includes(`/tiles`) ? `tiles`
-    : window.location.href.includes(`/watch`) ? `watch`
+    : window.location.href.includes(`/bible`) ? `bible`
       : `home`;
 
 
@@ -15,8 +15,8 @@ export const App = () => {
       {page === `tiles` && (
         <TilesPage />
       )}
-      {page === `watch` && (
-        <WatchPage />
+      {page === `bible` && (
+        <MemoryProblemsPage />
       )}
       {page === `home` && (
         <div className='flex flex-col p-2'>
