@@ -215,7 +215,7 @@ const MemoryQuestionView = ({
         }, 10);
     };
 
-    const partsRef = useRef([] as string[]);
+    const partsRef = useRef([] as { text: string; wasWrong?: boolean }[]);
 
     const [partIndex, setPartIndex] = useState(0);
     const [options, setOptions] = useState([] as {
@@ -231,7 +231,7 @@ const MemoryQuestionView = ({
             ;
 
         console.log(`parts`, { parts });
-        partsRef.current = parts;
+        partsRef.current = parts.map(x => ({ text: x }));
 
         nextQuestion(0);
     }, [phrase, mode]);
@@ -240,7 +240,8 @@ const MemoryQuestionView = ({
 
         const parts = partsRef.current;
         let nextPart = parts[nextPartIndex];
-        while (!normalizeAnswer(nextPart, mode)
+        while (nextPart
+            && !normalizeAnswer(nextPart.text, mode)
             && nextPartIndex < parts.length
         ) {
             nextPartIndex++;
@@ -254,9 +255,9 @@ const MemoryQuestionView = ({
 
         setPartIndex(nextPartIndex);
 
-        const wrongOptions = getWrongOptions(nextPart, parts, mode);
+        const wrongOptions = getWrongOptions(nextPart.text, parts.map(x => x.text), mode);
 
-        const options = shuffle([nextPart, ...wrongOptions.slice(0, 3)]);
+        const options = shuffle([nextPart.text, ...wrongOptions.slice(0, 3)]);
         setOptions(options.map(x => ({
             isMarkedWrong: false,
             text: normalizeAnswer(x, mode),
@@ -267,10 +268,11 @@ const MemoryQuestionView = ({
 
     const answer = (value: typeof options[number]) => {
         const parts = partsRef.current;
-        const isNext = normalizeAnswer(parts[partIndex], mode).startsWith(normalizeAnswer(value.text, mode));
+        const isNext = normalizeAnswer(parts[partIndex].text, mode).startsWith(normalizeAnswer(value.text, mode));
 
         if (!isNext) {
             value.isMarkedWrong = true;
+            parts[partIndex].wasWrong = true;
             setOptions(s => s.map(x => ({ ...x })));
             return;
         }
@@ -279,26 +281,32 @@ const MemoryQuestionView = ({
     };
 
     const parts = partsRef.current;
-    const completed = parts.slice(0, partIndex).join(` `);
+    const partsCompleted = parts.slice(0, partIndex);
     const isDone = partIndex >= parts.length;
 
     return (
         <>
             <div className=''>
-                <div className='mb-2 whitespace-pre-line'>
-                    <span>{prephrase}&nbsp;</span>
-                    <span>{completed}&nbsp;</span>
+                <div key={`text-${partIndex}`} className='mb-2 whitespace-pre-line'>
+                    <span>{prephrase} </span>
+                    {partsCompleted.map((x, i) => (
+                        <Fragment key={i}>
+                            <span
+                                className={x.wasWrong ? `text-red-600` : ``}
+                            >{x.text} </span>
+                        </Fragment>
+                    ))}
                     <span>{!isDone ? `___` : ``}</span>
                     <span className='inline-block relative'>
                         <span ref={targetRef} className='absolute top-[-2rem]' />
                     </span>
                 </div>
                 {!isDone && (
-                    <div key={completed}>
+                    <div key={`options-${partIndex}`}>
                         <div className='flex flex-row flex-wrap justify-center items-center'>
 
-                            {options.map(x => (
-                                <Fragment key={x.text}>
+                            {options.map((x, i) => (
+                                <Fragment key={i}>
                                     <button
                                         className={`m-1 p-1 min-w-[60px] min-h-[24px] 
                                             ${x.isMarkedWrong ? `bg-red-400` : `bg-slate-700 active:bg-slate-600`}
