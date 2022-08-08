@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { createRandomizer } from '@local/core';
+import { createRandomizer, ValueTypes } from '@local/core';
 import { getVerses } from './verses';
 
-const { randomItem, shuffle } = createRandomizer(`${Date.now()}`);
+const { randomItem, randomInt, shuffle } = createRandomizer(`${Date.now()}`);
 
 type Mode = 'whole' | 'letter';
 const normalizeAnswer = (text: string, mode: Mode) => {
@@ -107,6 +107,33 @@ const MemoryQuestionMenu = ({
     );
 };
 
+
+const getWrongOptions = (answer: string, choiceSource: string[], mode: Mode) => {
+
+    const getRandomOptions = () => {
+        if (Number.isInteger(Number(answer))) {
+            const n = Number(answer);
+            return [
+                n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
+                n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
+                n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
+                n + randomInt(ValueTypes.Int32(-4), ValueTypes.Int32(4)),
+                n + randomInt(ValueTypes.Int32(-10), ValueTypes.Int32(10)),
+                n + randomInt(ValueTypes.Int32(-10), ValueTypes.Int32(10)),
+            ].map(x => `${x}`);
+        }
+
+        return [...new Array(8).keys()]
+            .map(() => randomItem(choiceSource));
+    };
+
+    return [... new Set(
+        getRandomOptions()
+            .filter(x => normalizeAnswer(x, mode))
+            .filter(x => normalizeAnswer(x, mode) !== normalizeAnswer(answer, mode)),
+    )];
+};
+
 const MemoryQuestionView = ({
     phrase,
     mode,
@@ -156,11 +183,7 @@ const MemoryQuestionView = ({
             return;
         }
 
-        const wrongOptions = [... new Set(
-            [...new Array(8).keys()].map(x => randomItem(parts))
-                .filter(x => normalizeAnswer(x, mode))
-                .filter(x => normalizeAnswer(x, mode) !== normalizeAnswer(nextPart, mode)),
-        )];
+        const wrongOptions = getWrongOptions(nextPart, parts, mode);
 
         const options = shuffle([nextPart, ...wrongOptions.slice(0, 3)]);
         setOptions(options.map(x => ({
