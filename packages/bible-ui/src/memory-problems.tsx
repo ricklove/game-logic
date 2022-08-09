@@ -22,6 +22,64 @@ const getProblems = () => {
 
     const problemsFromVerses = getVerseProblems();
 
+    const normalizeText = (t: string) => {
+        return t.split(` `).map(x => normalizeAnswer(x, `whole`)).join(` `);
+    };
+
+    const allText = normalizeText(problemsFromVerses.flatMap(x => x.problems.map(p => p.phrase)).join(` `));
+    const allWords = allText.split(` `);
+    function escapeRegex(text: string) {
+        return text.replace(/[-/\\^$*+?.()|[\]{}]/g, `\\$&`);
+    }
+
+    const cleanWrongChoices = (correct: string, words: string[]) => {
+        words = [...new Set(words.filter(x => x !== correct))];
+        console.log(`cleanWrongChoices`, { correct, words });
+
+        const TARGET_COUNT = 6;
+        if (words.length < TARGET_COUNT) {
+            console.log(`cleanWrongChoices: Not enough - Adding extra choices`, { correct, words });
+            words = [...words, ...[...new Array(TARGET_COUNT)].map(() => randomItem(allWords))];
+        }
+
+        return words.slice(0, TARGET_COUNT);
+    };
+
+    const getWrongChoices = (textBefore: string, text: string, textAfter: string) => {
+        textBefore = normalizeText(textBefore);
+        text = normalizeText(text);
+        textAfter = normalizeText(textAfter);
+
+        if (!textBefore) {
+            const words = problemsFromVerses.map(s => s.problems[0].phrase.split(` `)[0]);
+            console.log(`getWrongChoices firstWords`, { text, words, textBefore, textAfter });
+            return cleanWrongChoices(text, words);
+        }
+
+
+        const getWordMatches = (pattern: string) => {
+            // eslint-disable-next-line @rushstack/security/no-unsafe-regexp
+            const matchesBefore = allText.matchAll(new RegExp(pattern, `g`));
+            const words = [...matchesBefore].map(m => m[1]);
+
+            console.log(`getWrongChoices.getWordMatches`, { pattern, words });
+            return words;
+        };
+
+
+        const wordsBefore = textBefore.split(` `);
+        const wordsAfter = textAfter.split(` `);
+
+        const wordsBefore02 = getWordMatches(`${escapeRegex(wordsBefore.slice(-2).join(` `))} (\\w+)`);
+        const wordsBefore01 = getWordMatches(`${escapeRegex(wordsBefore.slice(-1).join(` `))} (\\w+)`);
+        const wordsAfter02 = getWordMatches(`(\\w+) ${escapeRegex(wordsAfter.slice(0, 2).join(` `))}`);
+        const wordsAfter01 = getWordMatches(`(\\w+) ${escapeRegex(wordsAfter.slice(0, 1).join(` `))}`);
+
+        const words = [...wordsBefore02, ...wordsAfter02, ...wordsBefore01, ...wordsAfter01];
+        console.log(`getWrongChoices`, { text, words, wordsBefore02, wordsAfter02, wordsBefore01, wordsAfter01, textBefore, textAfter });
+        return cleanWrongChoices(text, words);
+    };
+
     const subjectsRaw = [
         {
             subject: `Memory Verses - Word Answers`,
@@ -32,6 +90,7 @@ const getProblems = () => {
                     mode: `whole` as Mode,
                     phrase: x.phrase,
                     prephrase: x.prephrase,
+                    getWrongChoices,
                 })),
             })),
         },
@@ -44,6 +103,7 @@ const getProblems = () => {
                     mode: `letter` as Mode,
                     phrase: x.phrase,
                     prephrase: x.prephrase,
+                    getWrongChoices,
                 })),
             })),
         },
@@ -255,7 +315,13 @@ const MemoryQuestionView = ({
 
         setPartIndex(nextPartIndex);
 
-        const wrongOptions = getWrongOptions(nextPart.text, parts.map(x => x.text), mode);
+        const wrongChoiceSource = problem
+            .getWrongChoices(
+                `${prephrase} ${nextPartIndex <= 0 ? `` : parts.slice(0, nextPartIndex).map(x => x.text).join(` `)}`,
+                nextPart.text,
+                parts.slice(nextPartIndex + 1).map(x => x.text).join(` `));
+
+        const wrongOptions = getWrongOptions(nextPart.text, wrongChoiceSource, mode);
 
         const options = shuffle([nextPart.text, ...wrongOptions.slice(0, 3)]);
         setOptions(options.map(x => ({
